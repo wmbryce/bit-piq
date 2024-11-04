@@ -12,21 +12,12 @@ import "hardhat/console.sol";
  * It also allows the owner to withdraw the Ether in the contract
  * @author BuidlGuidl
  */
-contract YourContract {
+contract BitPiqContract {
 	// State Variables
 	address public immutable owner;
-	string public greeting = "Building Unstoppable Apps!!!";
-	bool public premium = false;
-	uint256 public totalCounter = 0;
-	mapping(address => uint) public userGreetingCounter;
 
 	// Events: a way to emit log statements from smart contract that can be listened to by external parties
-	event GreetingChange(
-		address indexed greetingSetter,
-		string newGreeting,
-		bool premium,
-		uint256 value
-	);
+	event UpdateWagerPool();
 
 	// Constructor: Called once on contract deployment
 	// Check packages/hardhat/deploy/00_deploy_your_contract.ts
@@ -47,28 +38,9 @@ contract YourContract {
 	 *
 	 * @param _newGreeting (string memory) - new greeting to save on the contract
 	 */
-	function setGreeting(string memory _newGreeting) public payable {
-		// Print data to the hardhat chain console. Remove when deploying to a live network.
-		console.log(
-			"Setting new greeting '%s' from %s",
-			_newGreeting,
-			msg.sender
-		);
+	function PlaceBet(string memory _newGreeting) public payable {
 
-		// Change state variables
-		greeting = _newGreeting;
-		totalCounter += 1;
-		userGreetingCounter[msg.sender] += 1;
-
-		// msg.value: built-in global variable that represents the amount of ether sent with the transaction
-		if (msg.value > 0) {
-			premium = true;
-		} else {
-			premium = false;
-		}
-
-		// emit: keyword used to trigger an event
-		emit GreetingChange(msg.sender, _newGreeting, msg.value > 0, msg.value);
+		emit UpdateWagerPool();
 	}
 
 	/**
@@ -76,6 +48,11 @@ contract YourContract {
 	 * The function can only be called by the owner of the contract as defined by the isOwner modifier
 	 */
 	function withdraw() public isOwner {
+		(bool success, ) = owner.call{ value: address(this).balance }("");
+		require(success, "Failed to send Ether");
+	}
+
+	function ClaimWinnings() public isOwner {
 		(bool success, ) = owner.call{ value: address(this).balance }("");
 		require(success, "Failed to send Ether");
 	}
