@@ -1,3 +1,61 @@
+# BIT PIQ
+
+A decentralized betting platform built on Ethereum that allows users to place bets guessing the last 4 bits of the upcoming block hash.
+
+## Overview
+
+The Block Betting smart contract enables users to place bets on the last 4 bytes of upcoming Ethereum or Bitcoin block hashes.
+
+## Features
+
+- Place bets on future block hashes
+- Bet on blocks up to 2 blocks in advance(Maybe?)
+- Claim winnings if prediction matches actual block hash
+- Fully decentralized
+
+## Frontend
+
+- Simple UI for placing bets and claiming winnings
+- Built with React, Typescript, Tailwind, Shadcn and Vite
+
+## Contract Functions
+
+### `placeBet(bytes4 prediction, uint256 targetBlock)`
+
+Place a bet on a future block hash:
+
+- `prediction`: The predicted last 4 bytes of the target block's hash
+- `targetBlock`: The block number to bet on (must be 1-2 blocks ahead)
+- Requires sending ETH with the transaction as the bet amount
+
+### `claimWinnings(uint256 blockNumber)`
+
+Claim winnings for successful bets:
+
+- `blockNumber`: The block number you placed bets on
+- Can only be called after the target block is mined
+- Transfers winnings if predictions were correct
+
+## Events
+
+- `BetPlaced`: Emitted when a new bet is placed
+- `WinningsClaimed`: Emitted when winnings are claimed
+
+## Security
+
+- Bets can only be placed on future blocks
+- Each bet can only be claimed once
+- Requires non-zero bet amounts
+- Block number restrictions prevent gaming the system
+
+## Development
+
+This contract is written in Solidity ^0.8.0 and can be deployed to any EVM-compatible blockchain.
+
+## License
+
+This project is licensed under the MIT License.
+
 # 🏗 Scaffold-ETH 2
 
 <h4 align="center">
@@ -65,7 +123,6 @@ Run smart contract test with `yarn hardhat:test`
 - Edit your smart contract `YourContract.sol` in `packages/hardhat/contracts`
 - Edit your frontend homepage at `packages/nextjs/app/page.tsx`. For guidance on [routing](https://nextjs.org/docs/app/building-your-application/routing/defining-routes) and configuring [pages/layouts](https://nextjs.org/docs/app/building-your-application/routing/pages-and-layouts) checkout the Next.js documentation.
 - Edit your deployment scripts in `packages/hardhat/deploy`
-
 
 ## Documentation
 
