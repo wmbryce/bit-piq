@@ -2,15 +2,21 @@
 
 import { useState } from "react";
 import type { NextPage } from "next";
+import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 
 const Home: NextPage = () => {
   //   const { address: connectedAddress } = useAccount();
-  const [hashPick, setHashPick] = useState<boolean[]>([false, false, false, false]);
+  const [hashPick, setHashPick] = useState<string[]>(["0", "0", "0", "0"]);
+  const [tickets, setTickets] = useState<number>(0);
+
+  const { writeContractAsync: writePlaceBet } = useScaffoldWriteContract("BitPiqPool");
+
+  // const { data: bitpiqPoolWriteContract } = useScaffoldWriteContract({ contractName: "BitPiqPool" });
 
   const handleToggleHashPick = (index: number) => {
     setHashPick(prev => {
       const newHashPick = [...prev];
-      newHashPick[index] = !newHashPick[index];
+      newHashPick[index] = newHashPick[index] === "0" ? "1" : "0";
       return newHashPick;
     });
   };
@@ -29,11 +35,38 @@ const Home: NextPage = () => {
             className="w-36 h-60 bg-gray-200 mx-2 rounded-md text-6xl font-bold"
             onClick={() => handleToggleHashPick(index)}
           >
-            {pick ? "1" : "0"}
+            {pick}
           </button>
         ))}
       </div>
-      <button className="bg-black text-white px-4 py-2 mt-4 rounded-md">Bet</button>
+      <h2 className="mt-4">Wager (wei)</h2>
+      <input
+        type="number"
+        value={tickets}
+        onChange={e => {
+          if (e.target.value > "-1") {
+            setTickets(parseInt(e.target.value));
+          }
+        }}
+        className="w-36 h-40 pl-12 bg-gray-200 mx-2 rounded-md text-6xl font-bold"
+      />
+      <button
+        className="bg-black text-white px-4 py-2 mt-4 rounded-md hover:opacity-50"
+        onClick={async () => {
+          try {
+            const hashPickValue = parseInt(hashPick.join(""), 2);
+            await writePlaceBet({
+              functionName: "placeBet",
+              args: [hashPickValue, BigInt(tickets)],
+              value: BigInt(tickets),
+            });
+          } catch (error) {
+            console.error("Error placing bet:", error);
+          }
+        }}
+      >
+        Place Bet
+      </button>
     </div>
   );
 };
