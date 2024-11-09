@@ -13,10 +13,10 @@ import "hardhat/console.sol";
  * Once the target block is mined, users can claim winnings if their hash matches
  * @author BuidlGuidl
  */
-contract BitPiqContract {
+contract BitPiqPool {
     // State Variables
     address public immutable owner;
-    uint256 public constant TICKET_PRICE = 0.01 ether;
+    uint256 public constant TICKET_PRICE = 1 wei;
     
     struct Bet {
         uint8 hashPick;     // 4-bit hash prediction (0-15)
@@ -48,15 +48,16 @@ contract BitPiqContract {
     /**
      * Places a bet on the last 4 bits of a future block hash
      * @param _hashPick uint8 - 4-bit number to bet on (0-15)
-     * @param _blockNumber uint256 - Future block number to bet on
      * @param _tickets uint256 - Number of tickets to purchase
      */
-    function placeBet(uint8 _hashPick, uint256 _blockNumber, uint256 _tickets) public payable {
+    function placeBet(uint8 _hashPick, uint256 _tickets) public payable {
         // Validate inputs
         require(_hashPick <= 15, "Hash pick must be 4 bits (0-15)");
-        require(_blockNumber > block.number, "Can only bet on future blocks");
+        // require(_blockNumber > block.number, "Can only bet on future blocks");
         require(_tickets > 0, "Must buy at least 1 ticket");
         require(msg.value == _tickets * TICKET_PRICE, "Incorrect ETH amount sent");
+ 
+        uint256 _blockNumber = block.number;
 
         // Update pool
         pool += msg.value;
@@ -75,12 +76,21 @@ contract BitPiqContract {
     
     /**
      * Claims winnings for a winning bet
-     * @param _betIndex uint256 - Index of bet in bets array
      */
-    function claimWinnings(uint256 _betIndex) public {
-        require(_betIndex < bets.length, "Invalid bet index");
-        Bet storage bet = bets[_betIndex];
-        
+    function claimWinnings() public {
+        // Search for unclaimed bets by the sender
+        bool found = false;
+        Bet memory bet;
+
+        for (uint256 i = 0; i < bets.length; i++) {
+            if (bets[i].bettor == msg.sender && !bets[i].claimed) {
+                bet = bets[i];
+                found = true;
+                break;
+            }
+        }
+        require(found, "No unclaimed bets found for sender");
+
         require(msg.sender == bet.bettor, "Only bettor can claim");
         require(!bet.claimed, "Winnings already claimed");
         require(block.number > bet.blockNumber, "Target block not yet mined");
