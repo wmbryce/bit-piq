@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     BitPiqPool: {
-      address: "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+      address: "0x68B1D87F95878fE05B998F19b66F4baba5De1aed",
       abi: [
         {
           inputs: [],
@@ -121,6 +121,46 @@ const deployedContracts = {
           name: "claimWinnings",
           outputs: [],
           stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "getBets",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "uint8",
+                  name: "hashPick",
+                  type: "uint8",
+                },
+                {
+                  internalType: "uint256",
+                  name: "blockNumber",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "tickets",
+                  type: "uint256",
+                },
+                {
+                  internalType: "address",
+                  name: "bettor",
+                  type: "address",
+                },
+                {
+                  internalType: "bool",
+                  name: "claimed",
+                  type: "bool",
+                },
+              ],
+              internalType: "struct BitPiqPool.Bet[]",
+              name: "",
+              type: "tuple[]",
+            },
+          ],
+          stateMutability: "view",
           type: "function",
         },
         {

@@ -73,47 +73,40 @@ contract BitPiqPool {
         
         emit BetPlaced(msg.sender, _hashPick, _blockNumber, _tickets);
     }
-    
+
+    function getBets() public view returns (Bet[] memory) {
+        return bets;
+    }
+
     /**
      * Claims winnings for a winning bet
      */
     function claimWinnings() public {
         // Search for unclaimed bets by the sender
         bool found = false;
-        Bet memory bet;
+        uint256 winnings = 0;
 
         for (uint256 i = 0; i < bets.length; i++) {
             if (bets[i].bettor == msg.sender && !bets[i].claimed) {
-                bet = bets[i];
+                bytes32 blockHash = blockhash(bets[i].blockNumber);
+                require(blockHash != bytes32(0), "Block hash not available");
+                uint8 lastFourBits = uint8(uint256(blockHash) & 0xF);
+
+                if(lastFourBits == bets[i].hashPick) {
+                    winnings = bets[i].tickets * TICKET_PRICE * 2;
+                    pool -= winnings;
+                    (bool success, ) = payable(msg.sender).call{value: winnings}("Winnings Claimed");
+                    require(success, "Failed to send winnings");
+
+                    bets[i].claimed = true;
+                }
+        
                 found = true;
                 break;
             }
         }
         require(found, "No unclaimed bets found for sender");
-
-        require(msg.sender == bet.bettor, "Only bettor can claim");
-        require(!bet.claimed, "Winnings already claimed");
-        require(block.number > bet.blockNumber, "Target block not yet mined");
         
-        // Get last 4 bits of target block hash
-        bytes32 blockHash = blockhash(bet.blockNumber);
-        require(blockHash != bytes32(0), "Block hash not available");
-        
-        uint8 lastFourBits = uint8(uint256(blockHash) & 0xF);
-        
-        require(lastFourBits == bet.hashPick, "Hash does not match prediction");
-        
-        // Mark as claimed
-        bet.claimed = true;
-        
-        // Calculate and transfer winnings (2x tickets value)
-        uint256 winnings = bet.tickets * TICKET_PRICE * 2;
-
-        // Update pool
-        pool -= winnings;
-        (bool success, ) = bet.bettor.call{value: winnings}("");
-        require(success, "Failed to send winnings");
-        
-        emit WinningsClaimed(bet.bettor, winnings);
+        emit WinningsClaimed(msg.sender, winnings);
     }
 }
