@@ -17,17 +17,17 @@ contract BitPiqPool {
     // State Variables
     address public immutable owner;
     uint256 public constant TICKET_PRICE = 1 wei;
+    enum BetStatus { ACTIVE, CLAIMED, INACTIVE }
     
     struct Bet {
         uint8 hashPick;     // 4-bit hash prediction (0-15)
         uint256 blockNumber; // Target block number
         uint256 tickets;     // Number of tickets purchased
-        address bettor;      // Address of person who placed bet
-        bool claimed;        // Whether winnings have been claimed
+        BetStatus status;    // Whether the bet is still active
     }
     
     // Mapping of all active bets
-    Bet[] public bets;
+    mapping(address => Bet[]) public bets;
     
     // Pool of all staked ether
     uint256 public pool = 1000;
@@ -53,29 +53,34 @@ contract BitPiqPool {
     function placeBet(uint8 _hashPick, uint256 _tickets) public payable {
         // Validate inputs
         require(_hashPick <= 15, "Hash pick must be 4 bits (0-15)");
-        // require(_blockNumber > block.number, "Can only bet on future blocks");
         require(_tickets > 0, "Must buy at least 1 ticket");
         require(msg.value == _tickets * TICKET_PRICE, "Incorrect ETH amount sent");
  
         uint256 _blockNumber = block.number;
 
-        // Update pool
-        pool += msg.value;
+        // Update pool to actual contract balance
+        pool = address(this).balance;
         
-        // Create and store the bet
-        bets.push(Bet({
+        // Add logging
+        console.log("Placing bet for address:", msg.sender);
+        console.log("Current bets length:", bets[msg.sender].length);
+        
+        bets[msg.sender].push(Bet({
             hashPick: _hashPick,
             blockNumber: _blockNumber,
             tickets: _tickets,
-            bettor: msg.sender,
-            claimed: false
+            status: BetStatus.ACTIVE
         }));
+        
+        // Log after pushing
+        console.log("New bets length:", bets[msg.sender].length);
         
         emit BetPlaced(msg.sender, _hashPick, _blockNumber, _tickets);
     }
 
-    function getBets() public view returns (Bet[] memory) {
-        return bets;
+    function getBetsForAddress(address _address) public view returns (Bet[] memory) {
+        console.log("Number of bets:", bets[_address].length);
+        return bets[_address];
     }
 
     /**
@@ -84,21 +89,25 @@ contract BitPiqPool {
     function claimWinnings() public {
         // Search for unclaimed bets by the sender
         bool found = false;
-        uint256 winnings = 0;
+        uint256 newWinnings = 0;
 
-        for (uint256 i = 0; i < bets.length; i++) {
-            if (bets[i].bettor == msg.sender && !bets[i].claimed) {
-                bytes32 blockHash = blockhash(bets[i].blockNumber);
+        for (uint256 i = 0; i < bets[msg.sender].length; i++) {
+            if (bets[msg.sender][i].status == BetStatus.ACTIVE) {
+                bytes32 blockHash = blockhash(bets[msg.sender][i].blockNumber);
                 require(blockHash != bytes32(0), "Block hash not available");
                 uint8 lastFourBits = uint8(uint256(blockHash) & 0xF);
+                console.log("checking bet: lastFourBits:", lastFourBits, "hashPick:", bets[msg.sender][i].hashPick);
 
-                if(lastFourBits == bets[i].hashPick) {
-                    winnings = bets[i].tickets * TICKET_PRICE * 2;
-                    pool -= winnings;
-                    (bool success, ) = payable(msg.sender).call{value: winnings}("Winnings Claimed");
+                if(lastFourBits == bets[msg.sender][i].hashPick) {
+                    newWinnings = bets[msg.sender][i].tickets * TICKET_PRICE * 2;
+                    require(address(this).balance >= newWinnings, "Insufficient contract balance");
+                    pool = address(this).balance - newWinnings; // Update pool before sending
+                    (bool success, ) = payable(msg.sender).call{value: newWinnings}("Winnings Claimed");
                     require(success, "Failed to send winnings");
 
-                    bets[i].claimed = true;
+                    bets[msg.sender][i].status = BetStatus.CLAIMED;
+                } else {
+                    bets[msg.sender][i].status = BetStatus.INACTIVE;
                 }
         
                 found = true;
@@ -107,6 +116,6 @@ contract BitPiqPool {
         }
         require(found, "No unclaimed bets found for sender");
         
-        emit WinningsClaimed(msg.sender, winnings);
+        emit WinningsClaimed(msg.sender, newWinnings);
     }
 }

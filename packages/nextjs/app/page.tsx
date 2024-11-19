@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import RecentBets from "../components/RecentBets";
+import RecentBlocks from "../components/RecentBlocks";
 import type { NextPage } from "next";
+import { useAccount } from "wagmi";
 import { useFetchBlocks, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 
 const Home: NextPage = () => {
@@ -14,9 +17,12 @@ const Home: NextPage = () => {
 
   const { writeContractAsync: writeClaimWinnings } = useScaffoldWriteContract("BitPiqPool");
 
+  const { address: connectedAddress } = useAccount();
+
   const { data: bets } = useScaffoldReadContract({
     contractName: "BitPiqPool",
-    functionName: "getBets",
+    functionName: "getBetsForAddress",
+    args: [connectedAddress],
   });
 
   const handleToggleHashPick = (index: number) => {
@@ -84,53 +90,8 @@ const Home: NextPage = () => {
             {loading ? "Loading..." : "Place Bet"}
           </button>
         </div>
-        <div className="flex flex-col justify-start items-center bg-gray-200 rounded-md p-4 ml-8">
-          <h1 className="text-2xl font-bold">Recent Bets</h1>
-          <div className="flex flex-col justify-between flex-1">
-            <div className="flex flex-col">
-              {[...(bets ?? [])]
-                .reverse()
-                .slice(0, 20)
-                .map((bet: any) => (
-                  <div key={bet?.blockNumber}>
-                    {String(bet?.blockNumber)} - 0x{bet?.hashPick} - {String(bet?.tickets)} wei
-                  </div>
-                ))}
-            </div>
-            <button
-              className="bg-black text-white px-4 py-2 mt-4 rounded-md hover:opacity-50"
-              onClick={async () => {
-                try {
-                  setLoading(true);
-                  const response = await writeClaimWinnings({
-                    functionName: "claimWinnings",
-                  });
-                  console.log("Transaction successful:", response);
-                } catch (error) {
-                  console.error("Error placing bet:", error);
-                } finally {
-                  setLoading(false);
-                }
-              }}
-            >
-              {loading ? "Loading..." : "Claim Winnings"}
-            </button>
-          </div>
-        </div>
-        <div className="flex flex-col justify-start items-center bg-gray-200 rounded-md p-4 ml-8">
-          <h1 className="text-2xl font-bold">Recent Blocks</h1>
-          <div className="flex flex-col">
-            {blocks?.map((block: any) => (
-              <div key={block?.number}>
-                {String(block?.number)} - 0x{block?.hash.slice(65, 66)} -{" "}
-                {new Date(Number(block?.timestamp) * 1000)?.toLocaleString("en-US", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </div>
-            ))}
-          </div>
-        </div>
+        <RecentBets bets={bets} claimWinnings={writeClaimWinnings} />
+        <RecentBlocks />
       </div>
     </div>
   );
