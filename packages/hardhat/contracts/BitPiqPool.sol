@@ -34,7 +34,7 @@ contract BitPiqPool {
     
     // Events
     event BetPlaced(address indexed bettor, uint8 hashPick, uint256 blockNumber, uint256 tickets);
-    event WinningsClaimed(address indexed bettor, uint256 amount);
+    event WinningsTransferred(address indexed bettor, uint256 amount);
     
     constructor() {
         owner = msg.sender;
@@ -88,34 +88,33 @@ contract BitPiqPool {
      */
     function claimWinnings() public {
         // Search for unclaimed bets by the sender
-        bool found = false;
         uint256 newWinnings = 0;
 
         for (uint256 i = 0; i < bets[msg.sender].length; i++) {
+            // console.log("checking bet: status:", bets[msg.sender][i]);
             if (bets[msg.sender][i].status == BetStatus.ACTIVE) {
                 bytes32 blockHash = blockhash(bets[msg.sender][i].blockNumber);
-                require(blockHash != bytes32(0), "Block hash not available");
+                if(blockHash == bytes32(0)){
+                    continue;
+                }
                 uint8 lastFourBits = uint8(uint256(blockHash) & 0xF);
                 console.log("checking bet: lastFourBits:", lastFourBits, "hashPick:", bets[msg.sender][i].hashPick);
 
                 if(lastFourBits == bets[msg.sender][i].hashPick) {
                     newWinnings = bets[msg.sender][i].tickets * TICKET_PRICE * 2;
+                    console.log("found a winning bet:", newWinnings);
+
                     require(address(this).balance >= newWinnings, "Insufficient contract balance");
                     pool = address(this).balance - newWinnings; // Update pool before sending
+                    console.log("sending:", newWinnings, ", to: ", msg.sender);
+                    emit WinningsTransferred(msg.sender, newWinnings);
                     (bool success, ) = payable(msg.sender).call{value: newWinnings}("Winnings Claimed");
                     require(success, "Failed to send winnings");
-
                     bets[msg.sender][i].status = BetStatus.CLAIMED;
                 } else {
                     bets[msg.sender][i].status = BetStatus.INACTIVE;
                 }
-        
-                found = true;
-                break;
             }
         }
-        require(found, "No unclaimed bets found for sender");
-        
-        emit WinningsClaimed(msg.sender, newWinnings);
     }
 }
