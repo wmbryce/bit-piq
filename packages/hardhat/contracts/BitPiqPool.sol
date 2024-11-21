@@ -29,20 +29,31 @@ contract BitPiqPool {
     // Mapping of all active bets
     mapping(address => Bet[]) public bets;
     
-    // Pool of all staked ether
-    uint256 public pool = 1000;
-    
     // Events
     event BetPlaced(address indexed bettor, uint8 hashPick, uint256 blockNumber, uint256 tickets);
     event WinningsTransferred(address indexed bettor, uint256 amount);
     
     constructor() {
-        owner = msg.sender;
+        owner = 0x629850841a6A3B34f9E4358956Fa3f5963f6bBC3;
     }
     
     modifier isOwner() {
         require(msg.sender == owner, "Not the Owner");
         _;
+    }
+    /**
+     * Allows a person to contribute to the contract
+     */
+    function support() public payable returns (uint256) {
+        return address(this).balance;
+    }
+    /**
+     * Allows the owner to withdraw the contract balance
+     */
+    function withdraw() public isOwner {
+        (bool success, ) = payable(msg.sender).call{value: address(this).balance}("");
+        console.log("withdrawing:", address(this).balance, "to:", msg.sender);
+        require(success, "Failed to send Ether");
     }
     
     /**
@@ -58,9 +69,6 @@ contract BitPiqPool {
  
         uint256 _blockNumber = block.number;
 
-        // Update pool to actual contract balance
-        pool = address(this).balance;
-        
         // Add logging
         console.log("Placing bet for address:", msg.sender);
         console.log("Current bets length:", bets[msg.sender].length);
@@ -101,11 +109,10 @@ contract BitPiqPool {
                 console.log("checking bet: lastFourBits:", lastFourBits, "hashPick:", bets[msg.sender][i].hashPick);
 
                 if(lastFourBits == bets[msg.sender][i].hashPick) {
-                    newWinnings = bets[msg.sender][i].tickets * TICKET_PRICE * 2;
+                    newWinnings = bets[msg.sender][i].tickets * TICKET_PRICE * 15;
                     console.log("found a winning bet:", newWinnings);
 
                     require(address(this).balance >= newWinnings, "Insufficient contract balance");
-                    pool = address(this).balance - newWinnings; // Update pool before sending
                     console.log("sending:", newWinnings, ", to: ", msg.sender);
                     emit WinningsTransferred(msg.sender, newWinnings);
                     (bool success, ) = payable(msg.sender).call{value: newWinnings}("Winnings Claimed");

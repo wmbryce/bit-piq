@@ -57,13 +57,13 @@ const Home: NextPage = () => {
               </button>
             ))}
           </div>
-          <h2 className="mt-4">Wager (wei)</h2>
+          <h2 className="mt-4">Wager (ETH)</h2>
           <input
             type="number"
             value={tickets}
             onChange={e => {
               if (e.target.value > "-1") {
-                setTickets(parseInt(e.target.value));
+                setTickets(parseFloat(e.target.value));
               }
             }}
             className="w-36 h-40 pl-12 bg-gray-300 mx-2 rounded-md text-6xl font-bold"
@@ -90,7 +90,7 @@ const Home: NextPage = () => {
             {loading ? "Loading..." : "Place Bet"}
           </button>
         </div>
-        <RecentBets bets={bets} claimWinnings={writeClaimWinnings} />
+        <RecentBets bets={bets || []} claimWinnings={writeClaimWinnings} />
         <RecentBlocks />
       </div>
     </div>

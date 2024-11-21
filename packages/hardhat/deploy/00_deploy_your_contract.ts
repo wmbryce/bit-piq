@@ -34,7 +34,7 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
 
   // Get the deployed contract to interact with it after deploying.
   const yourContract = await hre.ethers.getContract<Contract>("BitPiqPool", deployer);
-  console.log("👋 Initial greeting:", await yourContract.pool());
+  console.log("👋 Initial greeting:", await yourContract.support());
 };
 
 export default deployYourContract;
