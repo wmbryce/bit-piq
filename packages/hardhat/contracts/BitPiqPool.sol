@@ -17,32 +17,21 @@ contract BitPiqPool {
     // State Variables
     address public immutable owner;
     uint256 private cumAmountOfPendingBets;
-
-    enum BetStatus {
-        ACTIVE,
-        CLAIMED,
-        INACTIVE
-    }
+    uint256 private nextBetId;
 
     struct Bet {
         uint8 hashPick; // 4-bit hash prediction (0-15)
         uint256 blockNumber; // Target block number
         uint256 ethAmount; // Amount of ETH in bet
-        BetStatus status; // Whether the bet is still active
     }
 
-    // Mapping of all active bets
-    mapping(address => Bet[10]) public Bets;
-
-    // unique identifiers mapping
-    mapping(address => mapping(uint256 => Bet)) public MoreBets;
-    mapping(address => uint256) public nextBetId;
+    mapping(address => mapping(uint256 => Bet)) public Bets;
 
     // Events
     event BetPlaced(
         address indexed bettor, uint256 indexed betId, uint8 hashPick, uint256 blockNumber, uint256 ethAmount
     );
-    event WinningsTransferred(address indexed bettor, uint256 amount);
+    event BetEvaluated(uint256 indexed betId, bool winner);
 
     constructor() {
         owner = 0x629850841a6A3B34f9E4358956Fa3f5963f6bBC3;
@@ -54,11 +43,55 @@ contract BitPiqPool {
     }
 
     /**
+     * @notice Places a bet on the last 4 bits of a future block hash
+     * @param _hashPick uint8 - 4-bit number to bet on (0-15)
+     */
+    function placeBet(uint8 _hashPick) public payable {
+        // Validate input
+        require(_hashPick <= 15, "Hash pick must be 4 bits (0-15)");
+
+        require(address(this).balance >= (msg.value * 16) + cumAmountOfPendingBets, "Insufficient amount in reserves");
+
+        Bets[msg.sender][nextBetId] = Bet({hashPick: _hashPick, blockNumber: block.number, ethAmount: msg.value});
+
+        emit BetPlaced(msg.sender, nextBetId, _hashPick, block.number, msg.value);
+        nextBetId++;
+    }
+
+    /**
+     * @notice Evaluates Bets for a user. Winning bets are payed out. All evaluated bets are removed from Bets mapping
+     * @param _betIds uint256[10] - Fixed size array of betIds to evaluate
+     */
+    function evaluateBets(uint256[10] calldata _betIds) public {
+        require(_betIds.length > 0, "Must supply betIds");
+
+        for (uint8 i = 0; i < _betIds.length; i++) {
+            Bet memory currentBet = Bets[msg.sender][_betIds[i]];
+
+            bytes32 blockHashAtTimeOfBet = blockhash(currentBet.blockNumber);
+
+            if (blockHashAtTimeOfBet == bytes32(0)) {
+                continue;
+            }
+
+            uint8 lastFourBits = uint8(uint256(blockHashAtTimeOfBet) & 0xF);
+            bool winner = false;
+
+            if (lastFourBits == currentBet.hashPick) {
+                winner = true;
+                (bool success,) = payable(msg.sender).call{value: currentBet.ethAmount * 16}("Winnings Claimed");
+                require(success, "Failed to send winnings");
+            }
+
+            emit BetEvaluated(_betIds[i], winner);
+            delete Bets[msg.sender][_betIds[i]];
+        }
+    }
+
+    /**
      * @notice Allows contributions to contract
      */
-    function support() public payable returns (uint256) {
-        return address(this).balance;
-    }
+    function support() public payable {}
 
     /**
      * @notice Allows contract onwer to check the balance
@@ -87,79 +120,5 @@ contract BitPiqPool {
         // Perform the withdrawal
         (bool success,) = payable(msg.sender).call{value: _amount}("");
         require(success, "Withdrawal failed");
-    }
-
-    /**
-     * @notice Places a bet on the last 4 bits of a future block hash
-     * @param _hashPick uint8 - 4-bit number to bet on (0-15)
-     */
-    function placeBet(uint8 _hashPick) public payable {
-        // Validate input
-        require(_hashPick <= 15, "Hash pick must be 4 bits (0-15)");
-
-        uint256 _betAmount = msg.value;
-
-        require(address(this).balance >= _betAmount + cumAmountOfPendingBets, "Insufficient amount in reserves");
-
-        uint256 _blockNumber = block.number;
-
-        // Add logging
-        console.log("Placing bet for address:", msg.sender);
-        console.log("Current bets length:", Bets[msg.sender].length);
-
-        // todo: implement stack for fixed sized array of Bets
-        // Bets[msg.sender].push(
-        //     Bet({hashPick: _hashPick, blockNumber: _blockNumber, ethAmount: _betAmount, status: BetStatus.ACTIVE})
-        // );
-
-        // Log after pushing
-        console.log("New Bets length:", Bets[msg.sender].length);
-
-        emit BetPlaced(msg.sender, _hashPick, _blockNumber, _betAmount);
-    }
-
-    // function getBetsForAddress(address _address) public view returns (Bet[] memory) {
-    //     console.log("Number of bets:", Bets[_address].length);
-    //     return Bets[_address];
-    // }
-
-    // function getUserBets() public view returns (Bet[] memory) {
-    //     return Bets[msg.sender];
-    // }
-
-    /**
-     * Claims winnings for a winning bet
-     */
-    function claimWinnings() public {
-        // Search for unclaimed Bets by the sender
-        // uint256 newWinnings = 0;
-
-        Bet[10] memory userBets = Bets[msg.sender];
-
-        for (uint256 i = 0; i < userBets.length; i++) {
-            Bet memory currentBet = userBets[i]; // get reference to actual Bet
-
-            if (currentBet.status == BetStatus.ACTIVE) {
-                bytes32 blockHashAtTimeOfBet = blockhash(currentBet.blockNumber);
-
-                if (blockHashAtTimeOfBet == bytes32(0)) {
-                    continue;
-                }
-
-                uint8 lastFourBits = uint8(uint256(blockHashAtTimeOfBet) & 0xF);
-                console.log("checking bet: lastFourBits:", lastFourBits, "hashPick:", Bets[msg.sender][i].hashPick);
-
-                if (lastFourBits == currentBet.hashPick) {
-                    console.log("found a winning bet:", currentBet.ethAmount);
-                    console.log("sending:", currentBet.ethAmount, ", to: ", msg.sender);
-
-                    (bool success,) = payable(msg.sender).call{value: currentBet.ethAmount}("Winnings Claimed");
-                    require(success, "Failed to send winnings");
-
-                    emit WinningsTransferred(msg.sender, currentBet.ethAmount);
-                }
-                // todo: emit event, remove from array
-            }
-        }
     }
 }
