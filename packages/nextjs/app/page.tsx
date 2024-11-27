@@ -8,21 +8,22 @@ import { useAccount } from "wagmi";
 import { useFetchBlocks, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 
 const Home: NextPage = () => {
-  //   const { address: connectedAddress } = useAccount();
+  const { address: connectedAddress } = useAccount();
   const [hashPick, setHashPick] = useState<string[]>(["0", "0", "0", "0"]);
   const [tickets, setTickets] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
 
   const { writeContractAsync: writePlaceBet } = useScaffoldWriteContract("BitPiqPool");
 
-  const { writeContractAsync: writeClaimWinnings } = useScaffoldWriteContract("BitPiqPool");
+  const { writeContractAsync: writeEvaluateBets } = useScaffoldWriteContract("BitPiqPool");
 
-  const { address: connectedAddress } = useAccount();
+  // const { address: connectedAddress } = useAccount();
 
   const { data: bets } = useScaffoldReadContract({
     contractName: "BitPiqPool",
-    functionName: "getBetsForAddress",
+    functionName: "getPendingBets",
     args: [connectedAddress],
+    // args: []
   });
 
   const handleToggleHashPick = (index: number) => {
@@ -76,7 +77,7 @@ const Home: NextPage = () => {
                 const hashPickValue = parseInt(hashPick.join(""), 2);
                 const response = await writePlaceBet({
                   functionName: "placeBet",
-                  args: [hashPickValue, BigInt(tickets)],
+                  args: [hashPickValue],
                   value: BigInt(tickets),
                 });
                 console.log("Transaction successful:", response);
@@ -90,7 +91,7 @@ const Home: NextPage = () => {
             {loading ? "Loading..." : "Place Bet"}
           </button>
         </div>
-        <RecentBets bets={bets || []} claimWinnings={writeClaimWinnings} />
+        <RecentBets bets={(bets as any) || []} evaluateBets={writeEvaluateBets} />
         <RecentBlocks />
       </div>
     </div>

@@ -1,28 +1,27 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { YourContract } from "../typechain-types";
 
-describe("YourContract", function () {
-  // We define a fixture to reuse the same setup in every test.
-
-  let yourContract: YourContract;
-  before(async () => {
-    const [owner] = await ethers.getSigners();
-    const yourContractFactory = await ethers.getContractFactory("YourContract");
-    yourContract = (await yourContractFactory.deploy(owner.address)) as YourContract;
-    await yourContract.waitForDeployment();
+describe("BitPiqPool", () => {
+  it("Deployment should set the owner", async function () {
+    const hardhatToken = await ethers.deployContract("BitPiqPool");
+    expect(await hardhatToken.owner()).to.equal("0x629850841a6A3B34f9E4358956Fa3f5963f6bBC3");
   });
 
-  describe("Deployment", function () {
-    it("Should have the right message on deploy", async function () {
-      expect(await yourContract.greeting()).to.equal("Building Unstoppable Apps!!!");
-    });
+  describe("support", () => {
+    it("should add to the contract's balance and return it", async () => {
+      const hardhatToken = await ethers.deployContract("BitPiqPool");
 
-    it("Should allow setting a new message", async function () {
-      const newGreeting = "Learn Scaffold-ETH 2! :)";
+      let contractBalance = await ethers.provider.getBalance(hardhatToken);
+      expect(contractBalance).to.equal(0);
 
-      await yourContract.setGreeting(newGreeting);
-      expect(await yourContract.greeting()).to.equal(newGreeting);
+      await hardhatToken.support({ value: ethers.parseEther("1") });
+
+      contractBalance = await ethers.provider.getBalance(hardhatToken);
+      expect(contractBalance.valueOf()).to.equal(ethers.parseEther("1"));
+
+      await hardhatToken.support({ value: ethers.parseEther("1") });
+      contractBalance = await ethers.provider.getBalance(hardhatToken);
+      expect(contractBalance.valueOf()).to.equal(ethers.parseEther("2"));
     });
   });
 });
