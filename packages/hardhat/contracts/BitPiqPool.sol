@@ -23,9 +23,17 @@ contract BitPiqPool {
         uint8 hashPick; // 4-bit hash prediction (0-15)
         uint256 blockNumber; // Target block number
         uint256 ethAmount; // Amount of ETH in bet
+            // string prevBetId;
+            // string nextBetId;
     }
 
-    mapping(address => mapping(uint256 => Bet)) public Bets;
+    struct BetWithBetId {
+        Bet bet;
+        uint256 betId;
+    }
+
+    mapping(address => mapping(uint256 => Bet)) public Bets; // storage. fixed sized arrays
+    // address -> betId -> Bet
 
     // Events
     event BetPlaced(
@@ -34,7 +42,8 @@ contract BitPiqPool {
     event BetEvaluated(uint256 indexed betId, bool winner);
 
     constructor() {
-        owner = 0x629850841a6A3B34f9E4358956Fa3f5963f6bBC3;
+        owner = msg.sender;
+        nextBetId = 1;
     }
 
     modifier isOwner() {
@@ -54,23 +63,34 @@ contract BitPiqPool {
 
         Bets[msg.sender][nextBetId] = Bet({hashPick: _hashPick, blockNumber: block.number, ethAmount: msg.value});
 
-        emit BetPlaced(msg.sender, nextBetId, _hashPick, block.number, msg.value);
+        emit BetPlaced(msg.sender, nextBetId, _hashPick, block.number, msg.value); // Use The Graph to read on-chain data
         nextBetId++;
+        cumAmountOfPendingBets += msg.value * 16;
     }
+
+    // user 123 makes bet with betId 1
+    // user 456 mabes bet with betId 2
+    // mapping  = {123: {1: {Bet}, 3: {Bet}}, 456: 2: {Bet}}
+    // user 123 makes bet with betId 3
 
     /**
      * @notice Evaluates Bets for a user. Winning bets are payed out. All evaluated bets are removed from Bets mapping
      * @param _betIds uint256[10] - Fixed size array of betIds to evaluate
      */
-    function evaluateBets(uint256[10] calldata _betIds) public {
-        require(_betIds.length > 0, "Must supply betIds");
+    function evaluateBets(uint256[] calldata _betIds) public {
+        // require(_betIds.length > 0, "Must supply betIds");
 
         for (uint8 i = 0; i < _betIds.length; i++) {
             Bet memory currentBet = Bets[msg.sender][_betIds[i]];
+            // todo validate betIds exist for user
+            // if (currentBet)
+            console.log(currentBet.hashPick);
 
             bytes32 blockHashAtTimeOfBet = blockhash(currentBet.blockNumber);
 
             if (blockHashAtTimeOfBet == bytes32(0)) {
+                console.log("block not mined yet");
+                // this not yet mined or too far in the past 256 blocks. ie handle expired bets
                 continue;
             }
 
@@ -80,18 +100,50 @@ contract BitPiqPool {
             if (lastFourBits == currentBet.hashPick) {
                 winner = true;
                 (bool success,) = payable(msg.sender).call{value: currentBet.ethAmount * 16}("Winnings Claimed");
+                console.log("winner", _betIds[i]);
                 require(success, "Failed to send winnings");
             }
 
             emit BetEvaluated(_betIds[i], winner);
-            delete Bets[msg.sender][_betIds[i]];
+            delete Bets[msg.sender][_betIds[i]]; // idk gassyness of this operation
         }
+    }
+
+    function getPendingBets(address _address) public view returns (BetWithBetId[] memory) {
+        uint256 count = 0;
+
+        // First, count how many bets the user has
+        for (uint256 i = 1; i < nextBetId; i++) {
+            if (Bets[_address][i].ethAmount > 0) {
+                count++;
+            }
+        }
+
+        console.log("count", count);
+
+        // Allocate memory for the result array
+        BetWithBetId[] memory userBets = new BetWithBetId[](count);
+        uint256 index = 0;
+
+        // console.log("userBetsArray", userBets);
+
+        // Populate the array
+        for (uint256 i = 1; i < nextBetId; i++) {
+            if (Bets[_address][i].ethAmount > 0) {
+                userBets[index] = BetWithBetId({bet: Bets[_address][i], betId: i});
+                // console.log(Bets[_address][i]);
+                // console.log("Withdrawing:", _amount, "to:", _address);
+                index++;
+            }
+        }
+
+        return userBets;
     }
 
     /**
      * @notice Allows contributions to contract
      */
-    function support() public payable {}
+    function support() public payable {} // race condition with return
 
     /**
      * @notice Allows contract onwer to check the balance
