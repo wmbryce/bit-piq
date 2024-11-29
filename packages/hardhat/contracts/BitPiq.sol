@@ -101,10 +101,8 @@ contract BitPiq {
      */
     function getBets(address _address) public view returns (Bet[] memory) {
         uint256 nextBetId = NextBetId[_address];
-        console.log("nextBetId", nextBetId);
 
         if (nextBetId == 0) {
-            console.log("nextBetId is 0. Returning empty array");
             return new Bet[](0);
         }
 

@@ -32,7 +32,6 @@ const Home: NextPage = () => {
 
   // const { blocks, transactionReceipts, currentPage, totalBlocks, error } = useFetchBlocks();
 
-  console.log("bets:", bets);
   return (
     <div className="flex flex-col items-center justify-start flex-1 py-8">
       <h1 className="text-4xl font-bold">BIT PIQ</h1>

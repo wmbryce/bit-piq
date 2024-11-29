@@ -25,7 +25,6 @@ const RecentBets: React.FC<RecentBlocksProps> = ({ bets, claimWinnings }) => {
     setRecentBets(dedupedBets);
   }, [bets]);
 
-  console.log("recentBets", recentBets);
   return (
     <div className="flex flex-col justify-start items-center bg-gray-200 rounded-md p-4 ml-8">
       <h1 className="text-2xl font-bold">Recent Bets</h1>
