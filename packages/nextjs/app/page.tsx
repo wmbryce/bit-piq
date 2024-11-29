@@ -5,25 +5,21 @@ import RecentBets from "../components/RecentBets";
 import RecentBlocks from "../components/RecentBlocks";
 import type { NextPage } from "next";
 import { useAccount } from "wagmi";
-import { useFetchBlocks, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 
 const Home: NextPage = () => {
   const { address: connectedAddress } = useAccount();
   const [hashPick, setHashPick] = useState<string[]>(["0", "0", "0", "0"]);
-  const [tickets, setTickets] = useState<number>(0);
+  const [betAmountInWei, setBetAmountInWei] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const { writeContractAsync: writePlaceBet } = useScaffoldWriteContract("BitPiqPool");
-
-  const { writeContractAsync: writeEvaluateBets } = useScaffoldWriteContract("BitPiqPool");
-
-  // const { address: connectedAddress } = useAccount();
+  const { writeContractAsync: writePlaceBet } = useScaffoldWriteContract("BitPiq");
+  const { writeContractAsync: writeClaimWinnings } = useScaffoldWriteContract("BitPiq");
 
   const { data: bets } = useScaffoldReadContract({
-    contractName: "BitPiqPool",
-    functionName: "getPendingBets",
+    contractName: "BitPiq",
+    functionName: "getBets",
     args: [connectedAddress],
-    // args: []
   });
 
   const handleToggleHashPick = (index: number) => {
@@ -34,9 +30,9 @@ const Home: NextPage = () => {
     });
   };
 
-  const { blocks, transactionReceipts, currentPage, totalBlocks, error } = useFetchBlocks();
+  // const { blocks, transactionReceipts, currentPage, totalBlocks, error } = useFetchBlocks();
 
-  console.log("bets:", bets, "blocks:", blocks);
+  console.log("bets:", bets);
   return (
     <div className="flex flex-col items-center justify-start flex-1 py-8">
       <h1 className="text-4xl font-bold">BIT PIQ</h1>
@@ -61,10 +57,10 @@ const Home: NextPage = () => {
           <h2 className="mt-4">Wager (ETH)</h2>
           <input
             type="number"
-            value={tickets}
+            value={betAmountInWei}
             onChange={e => {
               if (e.target.value > "-1") {
-                setTickets(parseFloat(e.target.value));
+                setBetAmountInWei(parseFloat(e.target.value));
               }
             }}
             className="w-36 h-40 pl-12 bg-gray-300 mx-2 rounded-md text-6xl font-bold"
@@ -78,7 +74,7 @@ const Home: NextPage = () => {
                 const response = await writePlaceBet({
                   functionName: "placeBet",
                   args: [hashPickValue],
-                  value: BigInt(tickets),
+                  value: BigInt(betAmountInWei),
                 });
                 console.log("Transaction successful:", response);
               } catch (error) {
@@ -91,7 +87,7 @@ const Home: NextPage = () => {
             {loading ? "Loading..." : "Place Bet"}
           </button>
         </div>
-        <RecentBets bets={(bets as any) || []} evaluateBets={writeEvaluateBets} />
+        <RecentBets bets={bets ? [...bets] : []} claimWinnings={writeClaimWinnings} />
         <RecentBlocks />
       </div>
     </div>
