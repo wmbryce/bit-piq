@@ -1,13 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import BetAmountPicker from "../components/BetAmountPicker";
-import HashPicker from "../components/HashPicker";
-import RecentBets from "../components/RecentBets";
-import RecentBlocks from "../components/RecentBlocks";
+import BetManager from "../components/BetManager";
+import IncomingBlocks from "../components/IncomingBlocks";
+import { useScaffoldReadContract, useScaffoldWriteContract } from "@/hooks/scaffold-eth";
 import type { NextPage } from "next";
 import { useAccount } from "wagmi";
-import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 
 const Home: NextPage = () => {
   const { address: connectedAddress } = useAccount();
@@ -29,41 +27,18 @@ const Home: NextPage = () => {
 
   return (
     <div className="flex flex-col items-start justify-start flex-1 py-8">
-      <h1 className="text-4xl font-bold tracking-tighter">Bit Piq</h1>
-      <p>
+      <h1 className="text-4xl font-bold tracking-tighter font-slate-900">Bit Piq</h1>
+      <p className="text-normal font-regular text-slate-700">
         Welcome to the hash betting game. Every 10 minutes a new block is mined. Bit piq, allows you to bet on the last
         four bits of that block hash.
       </p>
       <div className="flex flex-row justify-between px-8">
-        <div className="flex flex-col justify-start items-center bg-gray-200 rounded-md p-4">
-          <h1 className="text-2xl font-bold">Place Bets</h1>
-          <HashPicker />
-          <h2 className="mt-4">Wager (ETH)</h2>
-          <BetAmountPicker setBetAmountInWei={setBetAmountInWei} />
-          <button
-            className="bg-black text-white px-4 py-2 mt-4 rounded-md hover:opacity-50"
-            onClick={async () => {
-              try {
-                setLoading(true);
-                const hashPickValue = parseInt(binaryHashPick.join(""), 2);
-                const response = await writePlaceBet({
-                  functionName: "placeBet",
-                  args: [hashPickValue],
-                  value: BigInt(betAmountInWei),
-                });
-                console.log("Transaction successful:", response);
-              } catch (error) {
-                console.error("Error placing bet:", error);
-              } finally {
-                setLoading(false);
-              }
-            }}
-          >
-            {loading ? "Loading..." : "Place Bet"}
-          </button>
+        <div className="flex flex-1 min-w-[600px]">
+          <IncomingBlocks />
         </div>
-        <RecentBets bets={bets ? [...bets] : []} claimWinnings={writeClaimWinnings} />
-        <RecentBlocks />
+        <div className="flex flex-1">
+          <BetManager writePlaceBet={writePlaceBet} />
+        </div>
       </div>
     </div>
   );
