@@ -38,8 +38,8 @@ const Home: NextPage = () => {
 
   console.log("bets:", bets, "blocks:", blocks);
   return (
-    <div className="flex flex-col items-center justify-start flex-1 py-8">
-      <h1 className="text-4xl font-bold">BIT PIQ</h1>
+    <div className="flex flex-col items-start justify-start flex-1 py-8">
+      <h1 className="text-4xl font-bold tracking-tighter">Bit Piq</h1>
       <p>
         Welcome to the hash betting game. Every 10 minutes a new block is mined. Bit piq, allows you to bet on the last
         four bits of that block hash.
