@@ -1,19 +1,30 @@
 import React, { useEffect, useState } from "react";
 
-interface RecentBlocksProps {
-  bets: any[];
-  evaluateBets: any;
+export interface Bet {
+  hashPick: number;
+  blockNumber: bigint;
+  ethAmount: bigint;
+  betId: bigint;
+  claimed: boolean;
 }
 
-const RecentBets: React.FC<RecentBlocksProps> = ({ bets, evaluateBets }) => {
+interface RecentBlocksProps {
+  bets: Bet[];
+  claimWinnings: any;
+}
+
+const RecentBets: React.FC<RecentBlocksProps> = ({ bets, claimWinnings }) => {
   const [loading, setLoading] = useState(false);
   const [recentBets, setRecentBets] = useState<any[]>([]);
 
   useEffect(() => {
-    setRecentBets(Array.from(new Set([...recentBets, ...bets])));
+    const combinedBets = [...recentBets, ...bets];
+    // Overwrite existing recentBets with incoming bets by betId
+    const dedupedBets = Array.from(new Map(combinedBets.map(bet => [bet.betId.toString(), bet])).values());
+
+    setRecentBets(dedupedBets);
   }, [bets]);
 
-  console.log("recentBets", recentBets);
   return (
     <div className="flex flex-col justify-start items-center bg-gray-200 rounded-md p-4 ml-8">
       <h1 className="text-2xl font-bold">Recent Bets</h1>
@@ -21,10 +32,10 @@ const RecentBets: React.FC<RecentBlocksProps> = ({ bets, evaluateBets }) => {
         {[...(recentBets ?? [])]
           .reverse()
           .slice(0, 20)
-          .map((bet: any) => (
+          .map((bet: Bet) => (
             <div key={bet?.blockNumber}>
-              {String(bet?.bet?.blockNumber)} - 0x{bet?.bet?.hashPick} - {String(bet?.bet?.ethAmount)} wei -{" "}
-              {String(bet?.betId)}
+              {String(bet?.blockNumber)} - 0x{bet?.hashPick} - {String(bet?.ethAmount)} wei - {String(bet?.betId)} -{" "}
+              {String(bet?.claimed)}
             </div>
           ))}
       </div>
@@ -33,9 +44,8 @@ const RecentBets: React.FC<RecentBlocksProps> = ({ bets, evaluateBets }) => {
         onClick={async () => {
           try {
             setLoading(true);
-            const response = await evaluateBets({
-              functionName: "evaluateBets",
-              args: [bets.map(bet => bet.betId)],
+            const response = await claimWinnings({
+              functionName: "claimWinnings",
             });
             console.log("Transaction successful:", response);
           } catch (error) {
