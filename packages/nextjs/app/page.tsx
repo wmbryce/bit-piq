@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import BetManager from "../components/BetManager";
 import IncomingBlocks from "../components/IncomingBlocks";
 import { useFetchBlocks, useScaffoldReadContract, useScaffoldWriteContract } from "@/hooks/scaffold-eth";
@@ -9,10 +8,6 @@ import { useAccount } from "wagmi";
 
 const Home: NextPage = () => {
   const { address: connectedAddress } = useAccount();
-  const [binaryHashPick, setBinaryHashPick] = useState<string[]>(["0", "0", "0", "0"]);
-  const [betAmountInWei, setBetAmountInWei] = useState<number>(0);
-
-  const [loading, setLoading] = useState<boolean>(false);
 
   const { writeContractAsync: writePlaceBet } = useScaffoldWriteContract("BitPiq");
   const { writeContractAsync: writeClaimWinnings } = useScaffoldWriteContract("BitPiq");
