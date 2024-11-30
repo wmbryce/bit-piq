@@ -6,8 +6,8 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 
 const deployedContracts = {
   31337: {
-    BitPiqPool: {
-      address: "0x0E801D84Fa97b50751Dbf25036d067dCf18858bF",
+    BitPiq: {
+      address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
       abi: [
         {
           inputs: [],
@@ -19,31 +19,12 @@ const deployedContracts = {
           inputs: [
             {
               indexed: true,
-              internalType: "uint256",
-              name: "betId",
-              type: "uint256",
-            },
-            {
-              indexed: false,
-              internalType: "bool",
-              name: "winner",
-              type: "bool",
-            },
-          ],
-          name: "BetEvaluated",
-          type: "event",
-        },
-        {
-          anonymous: false,
-          inputs: [
-            {
-              indexed: true,
               internalType: "address",
-              name: "bettor",
+              name: "user",
               type: "address",
             },
             {
-              indexed: true,
+              indexed: false,
               internalType: "uint256",
               name: "betId",
               type: "uint256",
@@ -57,13 +38,13 @@ const deployedContracts = {
             {
               indexed: false,
               internalType: "uint256",
-              name: "blockNumber",
+              name: "ethAmount",
               type: "uint256",
             },
             {
               indexed: false,
               internalType: "uint256",
-              name: "ethAmount",
+              name: "blockNumber",
               type: "uint256",
             },
           ],
@@ -100,26 +81,29 @@ const deployedContracts = {
               name: "ethAmount",
               type: "uint256",
             },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "checkContractBalance",
-          outputs: [
             {
               internalType: "uint256",
-              name: "",
+              name: "betId",
               type: "uint256",
+            },
+            {
+              internalType: "bool",
+              name: "claimed",
+              type: "bool",
             },
           ],
           stateMutability: "view",
           type: "function",
         },
         {
-          inputs: [],
-          name: "checkCumAmountOfPendingBets",
+          inputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          name: "NextBetId",
           outputs: [
             {
               internalType: "uint256",
@@ -133,12 +117,17 @@ const deployedContracts = {
         {
           inputs: [
             {
+              internalType: "address",
+              name: "_address",
+              type: "address",
+            },
+            {
               internalType: "uint256[]",
               name: "_betIds",
               type: "uint256[]",
             },
           ],
-          name: "evaluateBets",
+          name: "claimWinnings",
           outputs: [],
           stateMutability: "nonpayable",
           type: "function",
@@ -151,39 +140,37 @@ const deployedContracts = {
               type: "address",
             },
           ],
-          name: "getPendingBets",
+          name: "getBets",
           outputs: [
             {
               components: [
                 {
-                  components: [
-                    {
-                      internalType: "uint8",
-                      name: "hashPick",
-                      type: "uint8",
-                    },
-                    {
-                      internalType: "uint256",
-                      name: "blockNumber",
-                      type: "uint256",
-                    },
-                    {
-                      internalType: "uint256",
-                      name: "ethAmount",
-                      type: "uint256",
-                    },
-                  ],
-                  internalType: "struct BitPiqPool.Bet",
-                  name: "bet",
-                  type: "tuple",
+                  internalType: "uint8",
+                  name: "hashPick",
+                  type: "uint8",
+                },
+                {
+                  internalType: "uint256",
+                  name: "blockNumber",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "ethAmount",
+                  type: "uint256",
                 },
                 {
                   internalType: "uint256",
                   name: "betId",
                   type: "uint256",
                 },
+                {
+                  internalType: "bool",
+                  name: "claimed",
+                  type: "bool",
+                },
               ],
-              internalType: "struct BitPiqPool.BetWithBetId[]",
+              internalType: "struct BitPiq.Bet[]",
               name: "",
               type: "tuple[]",
             },
@@ -222,6 +209,19 @@ const deployedContracts = {
           name: "support",
           outputs: [],
           stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "winningsReserve",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
           type: "function",
         },
         {
