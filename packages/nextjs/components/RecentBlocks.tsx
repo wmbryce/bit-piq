@@ -1,5 +1,5 @@
 import React from "react";
-import { useFetchBlocks } from "~~/hooks/scaffold-eth";
+import { useFetchBlocks } from "@/hooks/scaffold-eth";
 
 const RecentBlocks: React.FC = () => {
   const { blocks } = useFetchBlocks();

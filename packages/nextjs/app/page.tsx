@@ -3,7 +3,7 @@
 import { useState } from "react";
 import BetManager from "../components/BetManager";
 import IncomingBlocks from "../components/IncomingBlocks";
-import { useScaffoldReadContract, useScaffoldWriteContract } from "@/hooks/scaffold-eth";
+import { useFetchBlocks, useScaffoldReadContract, useScaffoldWriteContract } from "@/hooks/scaffold-eth";
 import type { NextPage } from "next";
 import { useAccount } from "wagmi";
 
@@ -23,7 +23,7 @@ const Home: NextPage = () => {
     args: [connectedAddress],
   });
 
-  // const { blocks, transactionReceipts, currentPage, totalBlocks, error } = useFetchBlocks();
+  const { blocks } = useFetchBlocks();
 
   return (
     <div className="flex flex-col items-start justify-start flex-1 py-8">
@@ -34,7 +34,7 @@ const Home: NextPage = () => {
       </p>
       <div className="flex flex-row justify-between px-8">
         <div className="flex flex-1 min-w-[600px]">
-          <IncomingBlocks />
+          <IncomingBlocks blocks={blocks} />
         </div>
         <div className="flex flex-1">
           <BetManager writePlaceBet={writePlaceBet} />
