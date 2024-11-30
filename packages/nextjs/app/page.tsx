@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import BetAmountPicker from "../components/BetAmountPicker";
+import HashPicker from "../components/HashPicker";
 import RecentBets from "../components/RecentBets";
 import RecentBlocks from "../components/RecentBlocks";
 import type { NextPage } from "next";
@@ -9,8 +11,9 @@ import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaf
 
 const Home: NextPage = () => {
   const { address: connectedAddress } = useAccount();
-  const [hashPick, setHashPick] = useState<string[]>(["0", "0", "0", "0"]);
+  const [binaryHashPick, setBinaryHashPick] = useState<string[]>(["0", "0", "0", "0"]);
   const [betAmountInWei, setBetAmountInWei] = useState<number>(0);
+
   const [loading, setLoading] = useState<boolean>(false);
 
   const { writeContractAsync: writePlaceBet } = useScaffoldWriteContract("BitPiq");
@@ -21,14 +24,6 @@ const Home: NextPage = () => {
     functionName: "getBets",
     args: [connectedAddress],
   });
-
-  const handleToggleHashPick = (index: number) => {
-    setHashPick(prev => {
-      const newHashPick = [...prev];
-      newHashPick[index] = newHashPick[index] === "0" ? "1" : "0";
-      return newHashPick;
-    });
-  };
 
   // const { blocks, transactionReceipts, currentPage, totalBlocks, error } = useFetchBlocks();
 
@@ -42,34 +37,15 @@ const Home: NextPage = () => {
       <div className="flex flex-row justify-between px-8">
         <div className="flex flex-col justify-start items-center bg-gray-200 rounded-md p-4">
           <h1 className="text-2xl font-bold">Place Bets</h1>
-          <div className="flex flex-row">
-            {hashPick.map((pick, index) => (
-              <button
-                key={index}
-                className="w-36 h-60 bg-gray-300 mx-2 rounded-md text-6xl font-bold"
-                onClick={() => handleToggleHashPick(index)}
-              >
-                {pick}
-              </button>
-            ))}
-          </div>
+          <HashPicker />
           <h2 className="mt-4">Wager (ETH)</h2>
-          <input
-            type="number"
-            value={betAmountInWei}
-            onChange={e => {
-              if (e.target.value > "-1") {
-                setBetAmountInWei(parseFloat(e.target.value));
-              }
-            }}
-            className="w-36 h-40 pl-12 bg-gray-300 mx-2 rounded-md text-6xl font-bold"
-          />
+          <BetAmountPicker setBetAmountInWei={setBetAmountInWei} />
           <button
             className="bg-black text-white px-4 py-2 mt-4 rounded-md hover:opacity-50"
             onClick={async () => {
               try {
                 setLoading(true);
-                const hashPickValue = parseInt(hashPick.join(""), 2);
+                const hashPickValue = parseInt(binaryHashPick.join(""), 2);
                 const response = await writePlaceBet({
                   functionName: "placeBet",
                   args: [hashPickValue],
