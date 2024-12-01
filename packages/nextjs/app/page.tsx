@@ -30,7 +30,7 @@ const Home: NextPage = () => {
       </p>
       <div className="flex flex-row justify-between">
         <div className="flex flex-1 min-w-[600px] px-4">
-          <IncomingBlocks blocks={blocks as Block[]} />
+          <IncomingBlocks blocks={blocks as Block[]} loading={!blocks} />
         </div>
         <div className="flex flex-1">
           <BetManager writePlaceBet={writePlaceBet} />
