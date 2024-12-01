@@ -12,7 +12,7 @@ const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
       <body>
         <ThemeProvider>
           <ScaffoldEthAppWithProviders>
-            <div className="flex flex-col px-4 lg:px-[200px]">{children}</div>
+            <div className="flex flex-col px-4 lg:px-[200px] bg-slate-100">{children}</div>
           </ScaffoldEthAppWithProviders>
         </ThemeProvider>
       </body>

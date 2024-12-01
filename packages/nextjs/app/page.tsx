@@ -1,18 +1,14 @@
 "use client";
 
-import { useState } from "react";
 import BetManager from "../components/BetManager";
 import IncomingBlocks from "../components/IncomingBlocks";
-import { useScaffoldReadContract, useScaffoldWriteContract } from "@/hooks/scaffold-eth";
+import type { Block } from "../components/IncomingBlocks";
+import { useFetchBlocks, useScaffoldReadContract, useScaffoldWriteContract } from "@/hooks/scaffold-eth";
 import type { NextPage } from "next";
 import { useAccount } from "wagmi";
 
 const Home: NextPage = () => {
   const { address: connectedAddress } = useAccount();
-  const [binaryHashPick, setBinaryHashPick] = useState<string[]>(["0", "0", "0", "0"]);
-  const [betAmountInWei, setBetAmountInWei] = useState<number>(0);
-
-  const [loading, setLoading] = useState<boolean>(false);
 
   const { writeContractAsync: writePlaceBet } = useScaffoldWriteContract("BitPiq");
   const { writeContractAsync: writeClaimWinnings } = useScaffoldWriteContract("BitPiq");
@@ -23,7 +19,7 @@ const Home: NextPage = () => {
     args: [connectedAddress],
   });
 
-  // const { blocks, transactionReceipts, currentPage, totalBlocks, error } = useFetchBlocks();
+  const { blocks } = useFetchBlocks();
 
   return (
     <div className="flex flex-col items-start justify-start flex-1 py-8">
@@ -32,9 +28,9 @@ const Home: NextPage = () => {
         Welcome to the hash betting game. Every 10 minutes a new block is mined. Bit piq, allows you to bet on the last
         four bits of that block hash.
       </p>
-      <div className="flex flex-row justify-between px-8">
-        <div className="flex flex-1 min-w-[600px]">
-          <IncomingBlocks />
+      <div className="flex flex-row justify-between">
+        <div className="flex flex-1 min-w-[600px] px-4">
+          <IncomingBlocks blocks={blocks as Block[]} loading={!blocks} />
         </div>
         <div className="flex flex-1">
           <BetManager writePlaceBet={writePlaceBet} />
