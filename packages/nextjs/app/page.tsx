@@ -2,6 +2,7 @@
 
 import BetManager from "../components/BetManager";
 import IncomingBlocks from "../components/IncomingBlocks";
+import type { Block } from "../components/IncomingBlocks";
 import { useFetchBlocks, useScaffoldReadContract, useScaffoldWriteContract } from "@/hooks/scaffold-eth";
 import type { NextPage } from "next";
 import { useAccount } from "wagmi";
@@ -27,9 +28,9 @@ const Home: NextPage = () => {
         Welcome to the hash betting game. Every 10 minutes a new block is mined. Bit piq, allows you to bet on the last
         four bits of that block hash.
       </p>
-      <div className="flex flex-row justify-between px-8">
-        <div className="flex flex-1 min-w-[600px]">
-          <IncomingBlocks blocks={blocks} />
+      <div className="flex flex-row justify-between">
+        <div className="flex flex-1 min-w-[600px] px-4">
+          <IncomingBlocks blocks={blocks as Block[]} />
         </div>
         <div className="flex flex-1">
           <BetManager writePlaceBet={writePlaceBet} />

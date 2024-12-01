@@ -1,43 +1,43 @@
 import React from "react";
 import BlobVisualizer from "./BlobVisualizer";
 
-type Block = {
-  baseFeePerGas: bigint;
-  blobGasUsed: bigint;
+export type Block = {
+  baseFeePerGas: bigint | null;
+  blobGasUsed: bigint | null;
   difficulty: bigint;
-  excessBlobGas: bigint;
+  excessBlobGas: bigint | null;
   extraData: string;
   gasLimit: bigint;
   gasUsed: bigint;
-  hash: string;
-  logsBloom: string;
+  hash: string | null;
+  logsBloom: string | null;
   miner: string;
   mixHash: string;
-  nonce: string;
-  number: bigint;
-  parentBeaconBlockRoot: string;
-  parentHash: string;
-  receiptsRoot: string;
-  sha3Uncles: string;
-  size: bigint;
-  stateRoot: string;
-  timestamp: bigint;
+  nonce: string | null;
+  number: bigint | null;
+  parentBeaconBlockRoot: string | null;
+  parentHash: string | null;
+  receiptsRoot: string | null;
+  sha3Uncles: string | null;
+  size: bigint | null;
+  stateRoot: string | null;
+  timestamp: bigint | null;
   totalDifficulty: bigint;
   transactions: any[]; // Could be further typed based on transaction structure
-  transactionsRoot: string;
+  transactionsRoot: string | null;
   uncles: string[];
   withdrawals: any[]; // Could be further typed based on withdrawal structure
-  withdrawalsRoot: string;
+  withdrawalsRoot: string | null;
 };
 
 const IncomingBlocks: React.FC<{ blocks: Block[] }> = ({ blocks }) => {
   console.log("incoming blocks", { blocks });
 
   return (
-    <div className="flex flex-col items-start justify-start flex-1 py-8">
-      <h1 className="text-lg font-medium font-slate-900">Incoming Blocks</h1>
-      <p className="text-normal font-regular text-slate-700">Here are the latest blocks that have been mined.</p>
-      <div className="flex flex-col space-y-4 mt-4 w-full">
+    <div className="flex flex-col items-start justify-start flex-1 py-8 relative">
+      <h1 className="text-lg font-medium font-slate-900 my-0">Incoming Blocks</h1>
+      <p className="text-normal font-regular text-slate-500 my-0">Here are the latest blocks that have been mined.</p>
+      <div className="flex flex-col space-y-4 mt-6 w-full">
         {blocks.slice(0, 5).map((block: Block) => (
           <div key={block.number} className="flex flex-row bg-slate-50 p-4 w-full border border-slate-200 rounded-md">
             <div className="flex flex-col justify-between bg-slate-300 py-2 px-4 rounded-md min-w-[100px]">
@@ -66,6 +66,7 @@ const IncomingBlocks: React.FC<{ blocks: Block[] }> = ({ blocks }) => {
           </div>
         ))}
       </div>
+      <div className="absolute bottom-0 left-0 right-0 h-[400px] bg-gradient-to-t from-slate-100 to-transparent via-transparent via-12%"></div>
     </div>
   );
 };
