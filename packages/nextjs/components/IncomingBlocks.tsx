@@ -1,6 +1,7 @@
 import React from "react";
 import BlobVisualizer from "./BlobVisualizer";
 import Skeleton from "./Skeleton";
+import { motion } from "framer-motion";
 
 export type Block = {
   baseFeePerGas: bigint | null;
@@ -33,17 +34,21 @@ export type Block = {
 
 const IncomingBlocks: React.FC<{ blocks: Block[]; loading: boolean }> = ({ blocks, loading }) => {
   return (
-    <div className="flex flex-col items-start justify-start flex-1 py-8 relative">
+    <div className="flex flex-col items-start justify-start flex-1 max-h-[740px] pt-8 relative">
       <h1 className="text-lg font-medium font-slate-900 my-0">Incoming Blocks</h1>
       <p className="text-normal font-regular text-slate-500 my-0">Here are the latest blocks that have been mined.</p>
-      <div className="flex flex-col space-y-4 mt-6 w-full">
+      <motion.ol layout className="flex flex-col space-y-4 mt-6 w-full overflow-y-auto">
         {loading ? (
-          <div key={12031923} className="flex flex-row bg-slate-50 p-4 w-full border border-slate-200 rounded-md">
+          <motion.li key={12031923} className="flex flex-row bg-slate-50 p-4 w-full border border-slate-200 rounded-md">
             <Skeleton className="w-full h-full" />
-          </div>
+          </motion.li>
         ) : (
-          blocks.slice(0, 5).map((block: Block) => (
-            <div key={block.number} className="flex flex-row bg-slate-50 p-4 w-full border border-slate-200 rounded-md">
+          blocks.slice(0, 6).map((block: Block) => (
+            <motion.li
+              layoutId={`block-${block.number}`}
+              key={`block-${block.number}`}
+              className="flex flex-row bg-slate-50 p-4 w-full border border-slate-200 rounded-md"
+            >
               <div className="flex flex-col justify-between bg-slate-300 py-2 px-4 rounded-md min-w-[100px]">
                 <h2 className="text-2xl font-bold text-slate-900 mb-0">#{String(block?.number)}</h2>
                 <p className="text-md font-normal text-slate-700 whitespace-nowrap my-0">
@@ -67,11 +72,11 @@ const IncomingBlocks: React.FC<{ blocks: Block[]; loading: boolean }> = ({ block
                   {block.miner.slice(-1)}
                 </h1>
               </div>
-            </div>
+            </motion.li>
           ))
         )}
-      </div>
-      <div className="absolute bottom-0 left-0 right-0 h-[400px] bg-gradient-to-t from-slate-100 to-transparent via-transparent via-12%"></div>
+      </motion.ol>
+      <div className="absolute bottom-0 left-0 right-0 h-[500px] bg-gradient-to-t from-slate-100 to-transparent via-transparent via-12%"></div>
     </div>
   );
 };
