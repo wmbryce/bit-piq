@@ -1,96 +1,66 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-const BetAmountPicker = ({
-  setBetAmountInWei,
-}: {
-  setBetAmountInWei: React.Dispatch<React.SetStateAction<number>>;
-}) => {
+const BetAmountPicker = () => {
+  const [activeMode, setActiveMode] = useState<"USD" | "ETH" | "WEI">("USD");
   const [betAmountInUSD, setBetAmountInUSD] = useState<number>(0);
-  const [betAmountInEth, setBetAmountInEth] = useState<number>(0);
-  const [displayMode, setDisplayMode] = useState<"ETH" | "WEI">("ETH");
 
-  const ethPrice = 2000; // Hardcoded ETH price in USD
-
-  // Sync ETH and USD when USD input changes
-  useEffect(() => {
-    const ethValue = betAmountInUSD / ethPrice;
-    if (!isNaN(ethValue)) {
-      setBetAmountInEth(ethValue);
-      setBetAmountInWei(Math.round(ethValue * 1e18));
-    }
-  }, [betAmountInUSD, setBetAmountInWei]);
-
-  // Sync USD when ETH/WEI input changes
-  useEffect(() => {
-    const usdValue = betAmountInEth * ethPrice;
-    setBetAmountInUSD(usdValue);
-    setBetAmountInWei(Math.round(betAmountInEth * 1e18));
-  }, [betAmountInEth, setBetAmountInWei]);
+  const handleToggleMode = (mode: "USD" | "ETH" | "WEI") => {
+    setActiveMode(mode);
+  };
 
   return (
-    <div className="flex flex-col items-center">
-      <p className="text-sm text-gray-500 mb-2">{`ETH Price: $${ethPrice} per ETH`}</p>
-
-      <div className="flex flex-row items-center justify-center space-x-6">
-        {/* USD Input */}
-        <div className="flex flex-col items-center">
-          <h2 className="text-xl font-bold mb-2">USD</h2>
-          <div className="flex items-center justify-center w-36 h-20 bg-gray-300 rounded-md">
-            <div
-              className="w-full h-full flex items-center justify-center text-4xl font-bold overflow-hidden text-ellipsis"
-              style={{
-                fontSize: "2.5rem",
-                overflow: "hidden",
-                whiteSpace: "nowrap",
-                textOverflow: "ellipsis",
-              }}
-            >
-              <input
-                type="number"
-                value={betAmountInUSD}
-                step="0.01"
-                onChange={e => setBetAmountInUSD(parseFloat(e.target.value) || 0)}
-                className="w-full h-full bg-transparent text-center outline-none"
-              />
-            </div>
-          </div>
+    <div className="flex flex-col w-full">
+      {/* Heading Section */}
+      <div className="flex justify-between items-center mb-4">
+        <div>
+          <h1 className="text-lg font-bold text-left">Wager Amount</h1>
+          <h2 className="text text-gray-600 text-left">Winnings are paid out 16 to 1</h2>
         </div>
-
-        {/* ETH/WEI Input */}
-        <div className="flex flex-col items-center">
-          <h2 className="text-xl font-bold mb-2">{displayMode}</h2>
-          <div className="flex items-center justify-center w-36 h-20 bg-gray-300 rounded-md">
-            <div
-              className="w-full h-full flex items-center justify-center text-4xl font-bold overflow-hidden text-ellipsis"
-              style={{
-                fontSize: "2.5rem",
-                overflow: "hidden",
-                whiteSpace: "nowrap",
-                textOverflow: "ellipsis",
-              }}
-            >
-              <input
-                type="number"
-                value={displayMode === "ETH" ? betAmountInEth : Math.round(betAmountInEth * 1e18)}
-                onChange={e => {
-                  const value = parseFloat(e.target.value) || 0;
-                  if (displayMode === "ETH") {
-                    setBetAmountInEth(value);
-                  } else {
-                    setBetAmountInWei(Math.round(value));
-                  }
-                }}
-                className="w-full h-full bg-transparent text-center outline-none"
-              />
-            </div>
-          </div>
+        <div className="flex items-center bg-gray-200 rounded-md p-1">
           <button
-            onClick={() => setDisplayMode(displayMode === "ETH" ? "WEI" : "ETH")}
-            className="mt-2 bg-black text-white px-2 py-1 rounded-md text-sm"
+            className={`px-4 py-2 rounded-md font-medium ${
+              activeMode === "USD" ? "bg-white shadow" : "bg-transparent"
+            }`}
+            onClick={() => handleToggleMode("USD")}
           >
-            Switch to {displayMode === "ETH" ? "WEI" : "ETH"}
+            USD
+          </button>
+          <button
+            className={`px-4 py-2 rounded-md font-medium ${
+              activeMode === "ETH" ? "bg-white shadow" : "bg-transparent"
+            }`}
+            onClick={() => handleToggleMode("ETH")}
+          >
+            ETH
+          </button>
+          <button
+            className={`px-4 py-2 rounded-md font-medium ${
+              activeMode === "WEI" ? "bg-white shadow" : "bg-transparent"
+            }`}
+            onClick={() => handleToggleMode("WEI")}
+          >
+            WEI
           </button>
         </div>
+      </div>
+
+      {/* Input Section */}
+      {/* Full-Width Input Section */}
+      <div className="w-full flex flex-col items-center">
+        <input
+          type="text"
+          value={activeMode === "USD" ? `$${betAmountInUSD.toFixed(2)}` : betAmountInUSD}
+          onChange={e => {
+            if (activeMode === "USD") {
+              const value = parseFloat(e.target.value.replace(/[^0-9.]/g, ""));
+              setBetAmountInUSD(isNaN(value) ? 0 : value);
+            } else {
+              const value = parseFloat(e.target.value);
+              setBetAmountInUSD(isNaN(value) ? 0 : value);
+            }
+          }}
+          className="w-full h-16 bg-gray-300 text-3xl text-left rounded-md outline-none pl-4"
+        />
       </div>
     </div>
   );

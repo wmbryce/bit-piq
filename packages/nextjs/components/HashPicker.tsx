@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const validateHexInput = (input: string) => {
   const validHexChar = /^[0-9A-Fa-f]$/;
@@ -10,6 +10,8 @@ const HashPicker = () => {
   const [binaryHashPick, setBinaryHashPick] = useState<string[]>(["0", "0", "0", "0"]);
   const [hexHashPick, setHexHashPick] = useState<string>("0");
   const [isHexValid, setIsHexValid] = useState<boolean>(true);
+
+  const hexInputRef = useRef<HTMLInputElement>(null);
 
   const handleTogglePicker = (picker: "binary" | "hex") => {
     setActivePicker(picker);
@@ -43,6 +45,12 @@ const HashPicker = () => {
       setIsHexValid(false);
     }
   };
+
+  useEffect(() => {
+    if (activePicker === "hex" && hexInputRef.current) {
+      hexInputRef.current.focus();
+    }
+  }, [activePicker]);
 
   return (
     <div className="flex flex-col w-full">
@@ -87,18 +95,24 @@ const HashPicker = () => {
             ))}
           </div>
         ) : (
-          <div className="flex items-center">
-            <input
-              type="text"
-              maxLength={1}
-              value={hexHashPick}
-              className={`w-20 h-20 text-center text-4xl font-bold rounded-md ${
-                isHexValid ? "bg-gray-300 text-black" : "bg-red-100 text-red-600"
-              }`}
-              onKeyDown={e => handleHexInput(e, setHexHashPick, setIsHexValid)}
-              style={{ caretColor: "transparent" }}
-            />
-            <div className="ml-4 w-32 text-sm text-red-600 break-words">
+          <div className="relative flex justify-center items-center">
+            {/* Centered Input Box */}
+            <div className="relative flex flex-col items-center">
+              <input
+                ref={hexInputRef}
+                type="text"
+                maxLength={1}
+                value={hexHashPick}
+                className={`w-20 h-20 text-center text-4xl font-bold rounded-md ${
+                  isHexValid ? "bg-gray-300 text-black" : "bg-red-100 text-red-600"
+                }`}
+                onKeyDown={e => handleHexInput(e, setHexHashPick, setIsHexValid)}
+                style={{ caretColor: "transparent" }}
+              />
+            </div>
+
+            {/* Fixed Position for Warning Message */}
+            <div className="absolute top-1/2 transform -translate-y-1/2 left-[calc(100%+10px)] w-32 text-sm text-red-600 break-words">
               {!isHexValid && "Must be a hexadecimal character (0-9, A-F)."}
             </div>
           </div>

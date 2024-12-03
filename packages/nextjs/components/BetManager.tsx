@@ -47,10 +47,9 @@ const BetManager = ({ writePlaceBet }: { writePlaceBet: any }) => {
       <div className="card-body">
         {activeTab === BetManagerTabEnum.PLACE_BET && (
           <div className="flex flex-col justify-start items-center rounded-md p-4">
-            <h1 className="text-2xl font-bold">Place Bet</h1>
             <HashPicker />
-            <h2 className="mt-4">Wager (ETH)</h2>
-            <BetAmountPicker setBetAmountInWei={setBetAmountInWei} />
+            <div className="h-4"></div>
+            <BetAmountPicker />
             <button
               className="bg-black text-white px-4 py-2 mt-4 rounded-md hover:opacity-50"
               onClick={async () => {
