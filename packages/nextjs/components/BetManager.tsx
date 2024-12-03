@@ -1,27 +1,53 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import BetAmountPicker from "./BetAmountPicker";
 import HashPicker from "./HashPicker";
 
+enum BetManagerTabEnum {
+  PLACE_BET = "placeBet",
+  VIEW_BETS = "viewBets",
+}
+
+function setBetManagerActiveTab(activeTab: BetManagerTabEnum) {
+  localStorage.setItem("betManagerActiveTab", activeTab);
+}
+
 const BetManager = ({ writePlaceBet }: { writePlaceBet: any }) => {
-  const [activeTab, setActiveTab] = useState("placeBet");
+  const [activeTab, setActiveTab] = useState<BetManagerTabEnum>(() => {
+    return (localStorage.getItem("betManagerActiveTab") as BetManagerTabEnum) || BetManagerTabEnum.PLACE_BET;
+  });
   const [loading, setLoading] = useState(false);
   const [betAmountInWei, setBetAmountInWei] = useState(0);
   const [binaryHashPick, setBinaryHashPick] = useState<string[]>([]);
 
+  useEffect(() => {
+    setBetManagerActiveTab(activeTab);
+  }, [activeTab]);
+
+  const handleTabChange = (newTab: BetManagerTabEnum) => {
+    setActiveTab(newTab);
+  };
+
   return (
-    <div className="card">
-      <div className="card-header">
-        <button className={`tab ${activeTab === "placeBet" ? "active" : ""}`} onClick={() => setActiveTab("placeBet")}>
+    <div className="card border-2 border-gray-300 rounded-md p-4 shadow-md">
+      <div className="card-header border-b-2 border-gray-400 -mx-4 px-4 pb-4 mb-2 flex items-center space-x-4">
+        <button
+          className={`tab text-sm py-0.5 px-4 ${activeTab === BetManagerTabEnum.PLACE_BET ? "active font-bold" : ""}`}
+          onClick={() => handleTabChange(BetManagerTabEnum.PLACE_BET)}
+        >
           Place Bet
         </button>
-        <button className={`tab ${activeTab === "viewBets" ? "active" : ""}`} onClick={() => setActiveTab("viewBets")}>
+        <div className="h-6 w-px bg-gray-300"></div>
+        <button
+          className={`tab text-sm py-0.5 px-4 ${activeTab === BetManagerTabEnum.VIEW_BETS ? "active font-bold" : ""}`}
+          onClick={() => handleTabChange(BetManagerTabEnum.VIEW_BETS)}
+        >
           View Bets
         </button>
       </div>
       <div className="card-body">
-        {activeTab === "placeBet" && (
-          <div className="flex flex-col justify-start items-center bg-gray-200 rounded-md p-4">
-            <h1 className="text-2xl font-bold">Place Bets</h1>
+        {activeTab === BetManagerTabEnum.PLACE_BET && (
+          <div className="flex flex-col justify-start items-center rounded-md p-4">
+            <h1 className="text-2xl font-bold">Place Bet</h1>
             <HashPicker />
             <h2 className="mt-4">Wager (ETH)</h2>
             <BetAmountPicker setBetAmountInWei={setBetAmountInWei} />
@@ -48,7 +74,11 @@ const BetManager = ({ writePlaceBet }: { writePlaceBet: any }) => {
             </button>
           </div>
         )}
-        {activeTab === "viewBets" && <div>View Bets Content</div>}
+        {activeTab === BetManagerTabEnum.VIEW_BETS && (
+          <div className="flex flex-col justify-start items-center bg-gray-200 rounded-md p-4">
+            <h1 className="text-2xl font-bold">View Bets</h1>
+          </div>
+        )}
       </div>
     </div>
   );
