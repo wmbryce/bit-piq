@@ -43,10 +43,18 @@ const IncomingBlocks: React.FC<{ blocks: Block[]; loading: boolean }> = ({ block
             <Skeleton className="w-full h-full" />
           </motion.li>
         ) : (
-          blocks.slice(0, 6).map((block: Block) => (
+          blocks.slice(0, 6).map((block: Block, index: number) => (
             <motion.li
               layoutId={`block-${block.number}`}
               key={`block-${block.number}`}
+              initial={index === 0 ? { opacity: 0 } : false}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.3,
+                default: { ease: "easeInOut", delay: index === 0 ? 0.28 : 0 },
+                // delay: index === 0 ? 0.3 : 0, // Delay the fade-in of new block
+                layout: { duration: 0.3 }, // Controls the sliding animation
+              }}
               className="flex flex-row bg-slate-50 p-4 w-full border border-slate-200 rounded-md"
             >
               <div className="flex flex-col justify-between bg-slate-300 py-2 px-4 rounded-md min-w-[100px]">
