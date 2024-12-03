@@ -1,26 +1,19 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+
+const validateHexInput = (input: string) => {
+  const validHexChar = /^[0-9A-Fa-f]$/;
+  return validHexChar.test(input);
+};
 
 const HashPicker = () => {
+  const [activePicker, setActivePicker] = useState<"binary" | "hex">("binary");
   const [binaryHashPick, setBinaryHashPick] = useState<string[]>(["0", "0", "0", "0"]);
   const [hexHashPick, setHexHashPick] = useState<string>("0");
   const [isHexValid, setIsHexValid] = useState<boolean>(true);
 
-  // Synchronize binaryHashPick when hexHashPick changes
-  useEffect(() => {
-    const hexValue = parseInt(hexHashPick, 16);
-    if (!isNaN(hexValue)) {
-      const binaryValue = hexValue.toString(2).padStart(4, "0").split("");
-      setBinaryHashPick(binaryValue);
-    }
-  }, [hexHashPick]);
-
-  // Synchronize hexHashPick when binaryHashPick changes
-  useEffect(() => {
-    const binaryValue = binaryHashPick.join("");
-    const hexValue = parseInt(binaryValue, 2).toString(16).toUpperCase();
-    setHexHashPick(hexValue);
-    setIsHexValid(true);
-  }, [binaryHashPick]);
+  const handleTogglePicker = (picker: "binary" | "hex") => {
+    setActivePicker(picker);
+  };
 
   const handleToggleBinaryHashPick = (index: number) => {
     setBinaryHashPick(prev => {
@@ -30,89 +23,89 @@ const HashPicker = () => {
     });
   };
 
-  const handleHexHashPick = (input: string) => {
-    if (input === "") {
+  const handleHexInput = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    setHexHashPick: React.Dispatch<React.SetStateAction<string>>,
+    setIsHexValid: React.Dispatch<React.SetStateAction<boolean>>,
+  ) => {
+    e.preventDefault();
+
+    const key = e.key.toUpperCase();
+
+    if (validateHexInput(key)) {
+      setHexHashPick(key);
+      setIsHexValid(true);
+    } else if (key === "BACKSPACE") {
       setHexHashPick("");
       setIsHexValid(true);
-      return;
-    }
-
-    const validHexChar = /^[0-9A-Fa-f]$/;
-    if (validHexChar.test(input)) {
-      setHexHashPick(input.toUpperCase());
-      setIsHexValid(true);
     } else {
-      setHexHashPick(input);
+      setHexHashPick(key);
       setIsHexValid(false);
     }
   };
 
   return (
-    <div className="flex flex-row">
-      {/* Binary Hash Pick */}
-      <div className="flex flex-row items-center">
-        <h1 className="text-2xl font-bold">Binary</h1>
-        {binaryHashPick.map((bit, index) => (
+    <div className="flex flex-col w-full">
+      {/* Heading */}
+      <div className="flex justify-between items-center mb-4">
+        <div>
+          <h1 className="text-lg font-bold text-left">Bit Selector</h1>
+          <h2 className="text text-gray-600 text-left">Guess the last digit of the upcoming block</h2>
+        </div>
+        <div className="flex items-center bg-gray-200 rounded-md p-1">
           <button
-            key={index}
-            className="w-20 h-20 bg-gray-300 mx-2 rounded-md text-4xl font-bold"
-            onClick={() => handleToggleBinaryHashPick(index)}
+            className={`px-4 py-2 rounded-md font-medium ${
+              activePicker === "binary" ? "bg-white shadow" : "bg-transparent"
+            }`}
+            onClick={() => handleTogglePicker("binary")}
           >
-            {bit}
+            Bin
           </button>
-        ))}
+          <button
+            className={`px-4 py-2 rounded-md font-medium ${
+              activePicker === "hex" ? "bg-white shadow" : "bg-transparent"
+            }`}
+            onClick={() => handleTogglePicker("hex")}
+          >
+            Hex
+          </button>
+        </div>
       </div>
 
-      {/* Hexadecimal Hash Pick */}
-      <div className="flex flex-row items-center ml-8">
-        <h1 className="text-2xl font-bold mr-2">Hex</h1>
-        <div className="relative">
-          <input
-            type="text"
-            maxLength={1}
-            value={hexHashPick}
-            className={`w-20 h-20 text-center rounded-md text-4xl font-bold ${
-              isHexValid ? "bg-gray-300 text-black" : "bg-red-100 text-red-600"
-            }`}
-            onChange={e => handleHexHashPick(e.target.value)}
-            onKeyDown={e => handleHexInput(e, setHexHashPick, setIsHexValid)}
-            style={{ caretColor: "transparent" }}
-          />
-          {!isHexValid && (
-            <div className="absolute left-0 w-full mt-2 text-sm text-center text-red-600">
-              Must be a hexadecimal character (0-9, A-F).
+      {/* Picker */}
+      <div className="flex justify-center items-center">
+        {activePicker === "binary" ? (
+          <div className="flex space-x-2">
+            {binaryHashPick.map((bit, index) => (
+              <button
+                key={index}
+                className="w-20 h-20 bg-gray-200 text-4xl font-bold rounded-md"
+                onClick={() => handleToggleBinaryHashPick(index)}
+              >
+                {bit}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="flex items-center">
+            <input
+              type="text"
+              maxLength={1}
+              value={hexHashPick}
+              className={`w-20 h-20 text-center text-4xl font-bold rounded-md ${
+                isHexValid ? "bg-gray-300 text-black" : "bg-red-100 text-red-600"
+              }`}
+              onKeyDown={e => handleHexInput(e, setHexHashPick, setIsHexValid)}
+              style={{ caretColor: "transparent" }}
+            />
+            <div className="ml-4 w-32 text-sm text-red-600 break-words">
+              {!isHexValid && "Must be a hexadecimal character (0-9, A-F)."}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
-};
-
-const validateHexInput = (input: string) => {
-  const validHexChar = /^[0-9A-Fa-f]$/;
-  return validHexChar.test(input);
-};
-
-const handleHexInput = (
-  e: React.KeyboardEvent<HTMLInputElement>,
-  setHexHashPick: React.Dispatch<React.SetStateAction<string>>,
-  setIsHexValid: React.Dispatch<React.SetStateAction<boolean>>,
-) => {
-  e.preventDefault();
-
-  const key = e.key.toUpperCase();
-
-  if (validateHexInput(key)) {
-    setHexHashPick(key);
-    setIsHexValid(true);
-  } else if (key === "BACKSPACE") {
-    setHexHashPick("");
-    setIsHexValid(true);
-  } else {
-    setHexHashPick(key);
-    setIsHexValid(false);
-  }
 };
 
 export default HashPicker;
