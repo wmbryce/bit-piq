@@ -52,7 +52,6 @@ const IncomingBlocks: React.FC<{ blocks: Block[]; loading: boolean }> = ({ block
               transition={{
                 duration: 0.3,
                 default: { ease: "easeInOut", delay: index === 0 ? 0.28 : 0 },
-                // delay: index === 0 ? 0.3 : 0, // Delay the fade-in of new block
                 layout: { duration: 0.3 }, // Controls the sliding animation
               }}
               className="flex flex-row bg-slate-50 p-4 w-full border border-slate-200 rounded-md"
@@ -73,7 +72,7 @@ const IncomingBlocks: React.FC<{ blocks: Block[]; loading: boolean }> = ({ block
                 <div className="flex flex-row items-center px-4 bg-slate-300 rounded-md mb-2 w-[104%]">
                   <p className="text-sm font-semibold text-slate-600 my-0 uppercase">{block.miner.slice(0, -1)}</p>
                 </div>
-                <BlobVisualizer minted={true} />
+                <BlobVisualizer minted={index !== 0} />
               </div>
               <div className="flex flex-col bg-slate-300 rounded-md px-4 py-0 ml-2">
                 <h1 className="text-6xl font-semibold text-slate-600 my-0 uppercase mt-[10px]">
