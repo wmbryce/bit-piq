@@ -50,8 +50,23 @@ const BetManager = ({ writePlaceBet }: { writePlaceBet: any }) => {
             <HashPicker />
             <div className="h-4"></div>
             <BetAmountPicker />
+            <div className="w-full mt-6">
+              {/* Key-Value Lines */}
+              <div className="flex justify-between mb-2">
+                <span className="text-sm font-medium text-gray-700">Block Number</span>
+                <span className="text-sm font-bold text-gray-900">12345678</span>
+              </div>
+              <div className="flex justify-between mb-2">
+                <span className="text-sm font-medium text-gray-700">Wager Value</span>
+                <span className="text-sm font-bold text-gray-900">$50.00</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm font-medium text-gray-700">Possible Winnings</span>
+                <span className="text-sm font-bold text-gray-900">$800.00</span>
+              </div>
+            </div>
             <button
-              className="bg-black text-white px-4 py-2 mt-4 rounded-md hover:opacity-50"
+              className="bg-black text-white px-4 py-2 mt-6 rounded-md hover:opacity-50"
               onClick={async () => {
                 try {
                   setLoading(true);
