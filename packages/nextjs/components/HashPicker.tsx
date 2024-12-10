@@ -104,7 +104,7 @@ const HashPicker = () => {
                 maxLength={1}
                 value={hexHashPick}
                 className={`w-20 h-20 text-center text-4xl font-bold rounded-md ${
-                  isHexValid ? "bg-gray-300 text-black" : "bg-red-100 text-red-600"
+                  isHexValid ? "bg-gray-200 text-black" : "bg-red-100 text-red-600"
                 }`}
                 onKeyDown={e => handleHexInput(e, setHexHashPick, setIsHexValid)}
                 style={{ caretColor: "transparent" }}
