@@ -29,10 +29,8 @@ const BlobVisualizer: React.FC<BlobVisualizerProps> = ({ minted, loading }) => {
             return [32, 4];
           }
         });
-      }, 1300);
+      }, 100);
     }
-
-    // return () => clearInterval(interval);
   }, [minted]);
 
   if (!minted) {
