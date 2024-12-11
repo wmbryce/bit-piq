@@ -8,30 +8,47 @@ type BlobVisualizerProps = {
 
 const BlobVisualizer: React.FC<BlobVisualizerProps> = ({ minted, loading }) => {
   const [currentIndex, setCurrentIndex] = useState([0, 0]);
-  const blobs = useMemo(() => new Array(32).fill(0).map((_, index) => new Array(4).fill(minted ? 1 : 0)), [minted]);
+  const [blobs, setBlobs] = useState(() => new Array(36).fill(0).map(() => new Array(4).fill(minted ? 1 : 0)));
   const [completed, setCompleted] = useState(false);
 
   useEffect(() => {
-    console.log("in useEffect", { completed, minted });
+    if (minted) {
+      // When minted, fill all blobs immediately
+      setBlobs(new Array(36).fill(0).map(() => new Array(4).fill(1)));
+      setCompleted(true);
+      setCurrentIndex([36, 4]);
+      return;
+    }
     if (!completed && !minted) {
       const interval = setInterval(() => {
         setCurrentIndex(prev => {
-          console.log({ prev });
-          if (prev[0] < 31) {
-            blobs[prev[0]][prev[1]] = 1;
-            return [prev[0] + 1, prev[1]];
-          } else if (prev[1] < 3) {
-            blobs[prev[0]][prev[1]] = 1;
-            return [0, prev[1] + 1];
+          const [x, y] = prev;
+          if (x < 35) {
+            setBlobs(currentBlobs => {
+              const newBlobs = currentBlobs.map(row => [...row]);
+              newBlobs[x][y] = 1;
+              return newBlobs;
+            });
+            return [x + 1, y];
+          } else if (y < 3) {
+            setBlobs(currentBlobs => {
+              const newBlobs = currentBlobs.map(row => [...row]);
+              newBlobs[x][y] = 1;
+              return newBlobs;
+            });
+            return [0, y + 1];
           } else {
             clearInterval(interval);
             setCompleted(true);
-            return [32, 4];
+            setBlobs(new Array(36).fill(0).map((_, index) => new Array(4).fill(1)));
+            return [36, 4];
           }
         });
       }, 100);
+
+      return () => clearInterval(interval);
     }
-  }, [minted]);
+  }, [minted, completed]);
 
   if (!minted) {
     console.log({ blobs, currentIndex });
