@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import BetAmountPicker from "./BetAmountPicker";
 import HashPicker from "./HashPicker";
+import { cn } from "@/utils/cn";
 
 enum BetManagerTabEnum {
   PLACE_BET = "placeBet",
@@ -28,27 +29,35 @@ const BetManager = ({ writePlaceBet }: { writePlaceBet: any }) => {
   };
 
   return (
-    <div className="card border-2 border-gray-300 rounded-md p-4 shadow-md">
-      <div className="card-header border-b-2 border-gray-400 -mx-4 px-4 pb-4 mb-2 flex items-center space-x-4">
+    <div className="border-[1px] border-slate-200 rounded-md shadow-md bg-slate-50 z-40 w-[480px]">
+      <div className="border-b-[1px] border-gray-200 flex items-center pt-4 px-4 gap-8">
         <button
-          className={`tab text-sm py-0.5 px-4 ${activeTab === BetManagerTabEnum.PLACE_BET ? "active font-bold" : ""}`}
+          className={cn(
+            "text-sm py-0.5 font-sans px-1 text-slate-500",
+            activeTab === BetManagerTabEnum.PLACE_BET
+              ? "active border-b-[2px] text-slate-800 border-slate-800 font-medium"
+              : "",
+          )}
           onClick={() => handleTabChange(BetManagerTabEnum.PLACE_BET)}
         >
           Place Bet
         </button>
-        <div className="h-6 w-px bg-gray-300"></div>
         <button
-          className={`tab text-sm py-0.5 px-4 ${activeTab === BetManagerTabEnum.VIEW_BETS ? "active font-bold" : ""}`}
+          className={cn(
+            "text-sm py-0.5 text-slate-500 px-1",
+            activeTab === BetManagerTabEnum.VIEW_BETS
+              ? "active border-b-[2px] text-slate-800 border-slate-800 font-medium"
+              : "",
+          )}
           onClick={() => handleTabChange(BetManagerTabEnum.VIEW_BETS)}
         >
           View Bets
         </button>
       </div>
-      <div className="card-body">
+      <div className="p-4">
         {activeTab === BetManagerTabEnum.PLACE_BET && (
-          <div className="flex flex-col justify-start items-center rounded-md p-4">
+          <div className="flex flex-col justify-start items-center rounded-md gap-8">
             <HashPicker />
-            <div className="h-4"></div>
             <BetAmountPicker />
             <div className="w-full mt-6">
               {/* Key-Value Lines */}
@@ -65,27 +74,29 @@ const BetManager = ({ writePlaceBet }: { writePlaceBet: any }) => {
                 <span className="text-sm font-bold text-gray-900">$800.00</span>
               </div>
             </div>
-            <button
-              className="bg-black text-white px-4 py-2 mt-6 rounded-md hover:opacity-50"
-              onClick={async () => {
-                try {
-                  setLoading(true);
-                  const hashPickValue = parseInt(binaryHashPick.join(""), 2);
-                  const response = await writePlaceBet({
-                    functionName: "placeBet",
-                    args: [hashPickValue],
-                    value: BigInt(betAmountInWei),
-                  });
-                  console.log("Transaction successful:", response);
-                } catch (error) {
-                  console.error("Error placing bet:", error);
-                } finally {
-                  setLoading(false);
-                }
-              }}
-            >
-              {loading ? "Loading..." : "Place Bet"}
-            </button>
+            <div className="flex justify-end items-center">
+              <button
+                className="bg-black text-white px-4 py-2 mt-6 rounded-md hover:opacity-50"
+                onClick={async () => {
+                  try {
+                    setLoading(true);
+                    const hashPickValue = parseInt(binaryHashPick.join(""), 2);
+                    const response = await writePlaceBet({
+                      functionName: "placeBet",
+                      args: [hashPickValue],
+                      value: BigInt(betAmountInWei),
+                    });
+                    console.log("Transaction successful:", response);
+                  } catch (error) {
+                    console.error("Error placing bet:", error);
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+              >
+                {loading ? "Loading..." : "Place Bet"}
+              </button>
+            </div>
           </div>
         )}
         {activeTab === BetManagerTabEnum.VIEW_BETS && (
