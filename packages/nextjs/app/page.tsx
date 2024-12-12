@@ -28,13 +28,9 @@ const Home: NextPage = () => {
         Welcome to the hash betting game. Every 10 minutes a new block is mined. Bit piq, allows you to bet on the last
         four bits of that block hash.
       </p>
-      <div className="flex flex-row justify-between">
-        <div className="flex flex-1 min-w-[600px] px-4">
-          <IncomingBlocks blocks={blocks as Block[]} loading={!blocks} />
-        </div>
-        <div className="flex flex-1">
-          <BetManager writePlaceBet={writePlaceBet} />
-        </div>
+      <div className="flex flex-row justify-between gap-8">
+        <IncomingBlocks blocks={blocks as Block[]} loading={!blocks} />
+        <BetManager writePlaceBet={writePlaceBet} />
       </div>
     </div>
   );
