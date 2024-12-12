@@ -5,15 +5,20 @@ const validateHexInput = (input: string) => {
   return validHexChar.test(input);
 };
 
+enum HashPickerMode {
+  BIN = "BIN",
+  HEX = "HEX",
+}
+
 const HashPicker = () => {
-  const [activePicker, setActivePicker] = useState<"binary" | "hex">("binary");
+  const [activePicker, setActivePicker] = useState<HashPickerMode>(HashPickerMode.BIN);
   const [binaryHashPick, setBinaryHashPick] = useState<string[]>(["0", "0", "0", "0"]);
   const [hexHashPick, setHexHashPick] = useState<string>("0");
   const [isHexValid, setIsHexValid] = useState<boolean>(true);
 
   const hexInputRef = useRef<HTMLInputElement>(null);
 
-  const handleTogglePicker = (picker: "binary" | "hex") => {
+  const handleTogglePicker = (picker: HashPickerMode) => {
     setActivePicker(picker);
   };
 
@@ -47,10 +52,12 @@ const HashPicker = () => {
   };
 
   useEffect(() => {
-    if (activePicker === "hex" && hexInputRef.current) {
+    if (activePicker === HashPickerMode.HEX && hexInputRef.current) {
       hexInputRef.current.focus();
     }
   }, [activePicker]);
+
+  const modes: HashPickerMode[] = [HashPickerMode.BIN, HashPickerMode.HEX];
 
   return (
     <div className="flex flex-col w-full">
@@ -61,28 +68,23 @@ const HashPicker = () => {
           <h2 className="text-sm text-slate-600 text-left">Guess the last digit of the upcoming block</h2>
         </div>
         <div className="flex items-center bg-gray-200 rounded-md p-1">
-          <button
-            className={`px-4 py-2 rounded-md font-medium ${
-              activePicker === "binary" ? "bg-white shadow" : "bg-transparent"
-            }`}
-            onClick={() => handleTogglePicker("binary")}
-          >
-            Bin
-          </button>
-          <button
-            className={`px-4 py-2 rounded-md font-medium ${
-              activePicker === "hex" ? "bg-white shadow" : "bg-transparent"
-            }`}
-            onClick={() => handleTogglePicker("hex")}
-          >
-            Hex
-          </button>
+          {modes.map((mode: HashPickerMode) => (
+            <button
+              key={mode}
+              className={`flex-1 px-4 py-2 text-sm rounded-md font-medium ${
+                activePicker === mode ? "bg-white shadow" : "bg-transparent"
+              }`}
+              onClick={() => handleTogglePicker(mode)}
+            >
+              {mode}
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Picker */}
       <div className="flex justify-start items-start">
-        {activePicker === "binary" ? (
+        {activePicker === HashPickerMode.BIN ? (
           <div className="flex space-x-2 w-full h-[90px]">
             {binaryHashPick.map((bit, index) => (
               <button

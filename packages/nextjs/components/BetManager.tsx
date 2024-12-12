@@ -29,7 +29,7 @@ const BetManager = ({ writePlaceBet }: { writePlaceBet: any }) => {
   };
 
   return (
-    <div className="border-[1px] border-slate-200 rounded-md shadow-md bg-slate-50 z-40 w-[480px]">
+    <div className="border-[1px] border-slate-200 rounded-md shadow-md bg-slate-50 z-40 w-[480px] h-fit mt-8">
       <div className="border-b-[1px] border-gray-200 flex items-center pt-4 px-4 gap-8">
         <button
           className={cn(
@@ -63,18 +63,18 @@ const BetManager = ({ writePlaceBet }: { writePlaceBet: any }) => {
               {/* Key-Value Lines */}
               <div className="flex justify-between mb-2">
                 <span className="text-sm font-medium text-gray-700">Block Number</span>
-                <span className="text-sm font-bold text-gray-900">12345678</span>
+                <span className="text-sm text-gray-600">12345678</span>
               </div>
               <div className="flex justify-between mb-2">
                 <span className="text-sm font-medium text-gray-700">Wager Value</span>
-                <span className="text-sm font-bold text-gray-900">$50.00</span>
+                <span className="text-sm text-gray-600">$120,392.00</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm font-medium text-gray-700">Possible Winnings</span>
-                <span className="text-sm font-bold text-gray-900">$800.00</span>
+                <span className="text-sm text-gray-600">$800.00</span>
               </div>
             </div>
-            <div className="flex justify-end items-center">
+            <div className="flex w-full justify-end items-center">
               <button
                 className="bg-black text-white px-4 py-2 mt-6 rounded-md hover:opacity-50"
                 onClick={async () => {
