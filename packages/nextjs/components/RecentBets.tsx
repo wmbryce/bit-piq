@@ -21,7 +21,6 @@ const RecentBets: React.FC<RecentBlocksProps> = ({ bets, claimWinnings }) => {
     const combinedBets = [...recentBets, ...bets];
     // Overwrite existing recentBets with incoming bets by betId
     const dedupedBets = Array.from(new Map(combinedBets.map(bet => [bet.betId.toString(), bet])).values());
-
     setRecentBets(dedupedBets);
   }, [bets]);
 

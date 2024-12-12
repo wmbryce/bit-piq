@@ -16,6 +16,7 @@
     "fork": "yarn workspace @bit-piq/hardhat fork",
     "format": "yarn next:format && yarn hardhat:format",
     "generate": "yarn workspace @bit-piq/hardhat generate",
+    "hardhat": "yarn workspace @bit-piq/hardhat",
     "hardhat-verify": "yarn workspace @bit-piq/hardhat hardhat-verify",
     "hardhat:compile": "yarn workspace @bit-piq/hardhat compile",
     "hardhat:generate-typechain": "yarn workspace @bit-piq/hardhat generate-typechain",
@@ -24,6 +25,7 @@
     "hardhat:lint-staged": "yarn workspace @bit-piq/hardhat lint-staged",
     "hardhat:test": "yarn workspace @bit-piq/hardhat test",
     "postinstall": "husky install",
+    "frontend": "yarn workspace @bit-piq/nextjs",
     "next:build": "yarn workspace @bit-piq/nextjs build",
     "next:check-types": "yarn workspace @bit-piq/nextjs check-types",
     "next:format": "yarn workspace @bit-piq/nextjs format",
@@ -40,7 +42,7 @@
     "husky": "~8.0.3",
     "lint-staged": "~13.2.2"
   },
-  "packageManager": "yarn@3.2.3",
+  "packageManager": "yarn@4.5.3",
   "engines": {
     "node": ">=18.18.0"
   }
