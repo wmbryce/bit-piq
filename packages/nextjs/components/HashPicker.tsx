@@ -5,15 +5,20 @@ const validateHexInput = (input: string) => {
   return validHexChar.test(input);
 };
 
+enum HashPickerMode {
+  BIN = "BIN",
+  HEX = "HEX",
+}
+
 const HashPicker = () => {
-  const [activePicker, setActivePicker] = useState<"binary" | "hex">("binary");
+  const [activePicker, setActivePicker] = useState<HashPickerMode>(HashPickerMode.BIN);
   const [binaryHashPick, setBinaryHashPick] = useState<string[]>(["0", "0", "0", "0"]);
   const [hexHashPick, setHexHashPick] = useState<string>("0");
   const [isHexValid, setIsHexValid] = useState<boolean>(true);
 
   const hexInputRef = useRef<HTMLInputElement>(null);
 
-  const handleTogglePicker = (picker: "binary" | "hex") => {
+  const handleTogglePicker = (picker: HashPickerMode) => {
     setActivePicker(picker);
   };
 
@@ -47,47 +52,44 @@ const HashPicker = () => {
   };
 
   useEffect(() => {
-    if (activePicker === "hex" && hexInputRef.current) {
+    if (activePicker === HashPickerMode.HEX && hexInputRef.current) {
       hexInputRef.current.focus();
     }
   }, [activePicker]);
 
+  const modes: HashPickerMode[] = [HashPickerMode.BIN, HashPickerMode.HEX];
+
   return (
     <div className="flex flex-col w-full">
       {/* Heading */}
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-start mb-4">
         <div>
-          <h1 className="text-lg font-bold text-left">Bit Selector</h1>
-          <h2 className="text text-gray-600 text-left">Guess the last digit of the upcoming block</h2>
+          <h1 className="text-lg font-medium text-slate-900 text-left mb-0">Bit Selector</h1>
+          <h2 className="text-sm text-slate-600 text-left">Guess the last digit of the upcoming block</h2>
         </div>
         <div className="flex items-center bg-gray-200 rounded-md p-1">
-          <button
-            className={`px-4 py-2 rounded-md font-medium ${
-              activePicker === "binary" ? "bg-white shadow" : "bg-transparent"
-            }`}
-            onClick={() => handleTogglePicker("binary")}
-          >
-            Bin
-          </button>
-          <button
-            className={`px-4 py-2 rounded-md font-medium ${
-              activePicker === "hex" ? "bg-white shadow" : "bg-transparent"
-            }`}
-            onClick={() => handleTogglePicker("hex")}
-          >
-            Hex
-          </button>
+          {modes.map((mode: HashPickerMode) => (
+            <button
+              key={mode}
+              className={`flex-1 px-4 py-2 text-sm rounded-md font-medium ${
+                activePicker === mode ? "bg-white shadow" : "bg-transparent"
+              }`}
+              onClick={() => handleTogglePicker(mode)}
+            >
+              {mode}
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Picker */}
-      <div className="flex justify-center items-center">
-        {activePicker === "binary" ? (
-          <div className="flex space-x-2">
+      <div className="flex justify-start items-start">
+        {activePicker === HashPickerMode.BIN ? (
+          <div className="flex space-x-2 w-full h-[90px]">
             {binaryHashPick.map((bit, index) => (
               <button
                 key={index}
-                className="w-20 h-20 bg-gray-200 text-4xl font-bold rounded-md"
+                className="flex flex-1 bg-gray-200 text-5xl font-bold rounded-md items-center justify-center"
                 onClick={() => handleToggleBinaryHashPick(index)}
               >
                 {bit}
@@ -95,22 +97,21 @@ const HashPicker = () => {
             ))}
           </div>
         ) : (
-          <div className="relative flex justify-center items-center">
+          <div className="relative flex justify-start items-center">
             {/* Centered Input Box */}
-            <div className="relative flex flex-col items-center">
+            <div className="relative flex flex-col items-start h-[90px]">
               <input
                 ref={hexInputRef}
                 type="text"
                 maxLength={1}
                 value={hexHashPick}
-                className={`w-20 h-20 text-center text-4xl font-bold rounded-md ${
+                className={`w-[106px] h-[90px] text-center text-5xl font-bold rounded-md ${
                   isHexValid ? "bg-gray-200 text-black" : "bg-red-100 text-red-600"
                 }`}
                 onKeyDown={e => handleHexInput(e, setHexHashPick, setIsHexValid)}
                 style={{ caretColor: "transparent" }}
               />
             </div>
-
             {/* Fixed Position for Warning Message */}
             <div className="absolute top-1/2 transform -translate-y-1/2 left-[calc(100%+10px)] w-32 text-sm text-red-600 break-words">
               {!isHexValid && "Must be a hexadecimal character (0-9, A-F)."}
