@@ -12,13 +12,29 @@ function setBetManagerActiveTab(activeTab: BetManagerTabEnum) {
   localStorage.setItem("betManagerActiveTab", activeTab);
 }
 
+/**
+ * Converts a string or string array to a numeric value.
+ * - If `s` is a string, the function parses it as a hexadecimal character.
+ * - If `s` is a string array, the function joins the elements and parses the result as a binary number.
+ * @param s - A single string or an array of strings.
+ * @returns The parsed numeric value.
+ */
+function getHashPickValue(s: string | string[]): number {
+  if (typeof s === "string") {
+    return parseInt(s, 16);
+  }
+  return parseInt(s.join(""), 2);
+}
+
 const BetManager = ({ writePlaceBet }: { writePlaceBet: any }) => {
   const [activeTab, setActiveTab] = useState<BetManagerTabEnum>(() => {
     return (localStorage.getItem("betManagerActiveTab") as BetManagerTabEnum) || BetManagerTabEnum.PLACE_BET;
   });
   const [loading, setLoading] = useState(false);
+  // const [betAmountInUsd, setBetAmountInUsd] = useState(0);
+  // const [betAmountInEth, setBetAmountInEth] = useState(0);
   const [betAmountInWei, setBetAmountInWei] = useState(0);
-  const [binaryHashPick, setBinaryHashPick] = useState<string[]>([]);
+  const [hashPick, setHashPick] = useState<string | string[]>("0");
 
   useEffect(() => {
     setBetManagerActiveTab(activeTab);
@@ -57,7 +73,7 @@ const BetManager = ({ writePlaceBet }: { writePlaceBet: any }) => {
       <div className="p-4">
         {activeTab === BetManagerTabEnum.PLACE_BET && (
           <div className="flex flex-col justify-start items-center rounded-md gap-8">
-            <HashPicker />
+            <HashPicker setHashPick={setHashPick} />
             <BetAmountPicker />
             <div className="w-full mt-6">
               {/* Key-Value Lines */}
@@ -80,7 +96,7 @@ const BetManager = ({ writePlaceBet }: { writePlaceBet: any }) => {
                 onClick={async () => {
                   try {
                     setLoading(true);
-                    const hashPickValue = parseInt(binaryHashPick.join(""), 2);
+                    const hashPickValue = getHashPickValue(hashPick);
                     const response = await writePlaceBet({
                       functionName: "placeBet",
                       args: [hashPickValue],
