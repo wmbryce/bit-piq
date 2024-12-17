@@ -1,8 +1,15 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
-const validateHexInput = (input: string) => {
-  const validHexChar = /^[0-9A-Fa-f]$/;
-  return validHexChar.test(input);
+const validateHexInput = (input: string) => /^[0-9A-Fa-f]$/.test(input);
+
+const hexToBinary = (hex: string): string[] => {
+  const binary = parseInt(hex, 16).toString(2).padStart(4, "0");
+  return binary.split("");
+};
+
+const binaryToHex = (binary: string[]): string => {
+  const binaryStr = binary.join("");
+  return parseInt(binaryStr, 2).toString(16).toUpperCase();
 };
 
 enum HashPickerMode {
@@ -10,7 +17,11 @@ enum HashPickerMode {
   HEX = "HEX",
 }
 
-const HashPicker = () => {
+type HashPickerProps = {
+  setHashPick: React.Dispatch<React.SetStateAction<string | string[]>>;
+};
+
+const HashPicker: React.FC<HashPickerProps> = ({ setHashPick }) => {
   const [activePicker, setActivePicker] = useState<HashPickerMode>(HashPickerMode.BIN);
   const [binaryHashPick, setBinaryHashPick] = useState<string[]>(["0", "0", "0", "0"]);
   const [hexHashPick, setHexHashPick] = useState<string>("0");
@@ -26,15 +37,19 @@ const HashPicker = () => {
     setBinaryHashPick(prev => {
       const newHashPick = [...prev];
       newHashPick[index] = newHashPick[index] === "0" ? "1" : "0";
+
+      const newHex = binaryToHex(newHashPick);
+      setHexHashPick(newHex);
+
+      setIsHexValid(validateHexInput(newHex));
+
+      setHashPick(newHashPick);
+
       return newHashPick;
     });
   };
 
-  const handleHexInput = (
-    e: React.KeyboardEvent<HTMLInputElement>,
-    setHexHashPick: React.Dispatch<React.SetStateAction<string>>,
-    setIsHexValid: React.Dispatch<React.SetStateAction<boolean>>,
-  ) => {
+  const handleHexInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
     e.preventDefault();
 
     const key = e.key.toUpperCase();
@@ -42,12 +57,21 @@ const HashPicker = () => {
     if (validateHexInput(key)) {
       setHexHashPick(key);
       setIsHexValid(true);
+
+      const newBinary = hexToBinary(key);
+      setBinaryHashPick(newBinary);
+
+      setHashPick(key);
     } else if (key === "BACKSPACE") {
-      setHexHashPick("");
+      setHexHashPick("0");
       setIsHexValid(true);
+
+      setBinaryHashPick(["0", "0", "0", "0"]);
+      setHashPick("0");
     } else {
       setHexHashPick(key);
       setIsHexValid(false);
+      setBinaryHashPick(["0", "0", "0", "0"]);
     }
   };
 
@@ -108,7 +132,7 @@ const HashPicker = () => {
                 className={`w-[106px] h-[90px] text-center text-5xl font-bold rounded-md ${
                   isHexValid ? "bg-gray-200 text-black" : "bg-red-100 text-red-600"
                 }`}
-                onKeyDown={e => handleHexInput(e, setHexHashPick, setIsHexValid)}
+                onKeyDown={handleHexInput}
                 style={{ caretColor: "transparent" }}
               />
             </div>

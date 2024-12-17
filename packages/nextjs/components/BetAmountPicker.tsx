@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Image from "next/image";
+import { BetAmount } from "./BetManager";
 import { motion } from "framer-motion";
 import { NumericFormat } from "react-number-format";
 
@@ -9,15 +9,17 @@ enum BetAmountMode {
   WEI = "WEI",
 }
 
-const BetAmountPicker = () => {
+type BetAmountPickerProps = {
+  betAmount: BetAmount;
+  updateUsd: (usd: number) => void;
+  updateEth: (eth: number) => void;
+  updateWei: (wei: number) => void;
+};
+
+const BetAmountPicker = ({ betAmount, updateUsd, updateEth, updateWei }: BetAmountPickerProps) => {
   const [activeMode, setActiveMode] = useState<BetAmountMode>(BetAmountMode.USD);
-  const [betAmount, setBetAmount] = useState<number>(0);
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
-
-  const handleToggleMode = (mode: BetAmountMode) => {
-    setActiveMode(mode);
-  };
 
   const handleMouseDown = (changeFn: () => void) => {
     changeFn();
@@ -35,7 +37,56 @@ const BetAmountPicker = () => {
     setIntervalId(null);
   };
 
+  const getIncrementValue = () => {
+    switch (activeMode) {
+      case BetAmountMode.USD:
+        return 1; // Increment by $1
+      case BetAmountMode.ETH:
+        return 0.0001; // Increment by 0.0001 ETH
+      case BetAmountMode.WEI:
+        return 1e12; // Increment by 1 trillion WEI (1 szabo)
+      default:
+        return 0;
+    }
+  };
+
+  const handleIncrement = () => {
+    const incrementValue = getIncrementValue();
+    handleValueChange(String(getDisplayValue() + incrementValue));
+  };
+
+  const handleDecrement = () => {
+    const decrementValue = getIncrementValue();
+    handleValueChange(String(Math.max(0, getDisplayValue() - decrementValue))); // Ensure value doesn't go below 0
+  };
+
   const modes: BetAmountMode[] = [BetAmountMode.USD, BetAmountMode.ETH, BetAmountMode.WEI];
+
+  const handleValueChange = (value: string) => {
+    const numericValue = Math.max(0, parseFloat(value || "0"));
+    switch (activeMode) {
+      case BetAmountMode.USD:
+        updateUsd(numericValue);
+        break;
+      case BetAmountMode.ETH:
+        updateEth(numericValue);
+        break;
+      case BetAmountMode.WEI:
+        updateWei(numericValue);
+        break;
+    }
+  };
+
+  const getDisplayValue = () => {
+    switch (activeMode) {
+      case BetAmountMode.USD:
+        return betAmount.usd;
+      case BetAmountMode.ETH:
+        return betAmount.eth;
+      case BetAmountMode.WEI:
+        return betAmount.wei;
+    }
+  };
 
   return (
     <div className="relative w-full">
@@ -47,39 +98,33 @@ const BetAmountPicker = () => {
         <motion.div className="flex items-center bg-gray-200 rounded-md p-1" layout>
           {modes.map(mode => (
             <motion.button
-              // layoutId={activeMode === mode ? "focused" : "unfocused"}
               key={mode}
-              className={`flex-1 px-4 py-2 text-sm rounded-md font-medium ${activeMode === mode ? "bg-white shadow" : "bg-transparent"}`}
-              onClick={() => handleToggleMode(mode)}
+              className={`flex-1 px-4 py-2 text-sm rounded-md font-medium ${
+                activeMode === mode ? "bg-white shadow" : "bg-transparent"
+              }`}
+              onClick={() => setActiveMode(mode)}
             >
               {mode}
             </motion.button>
           ))}
         </motion.div>
       </div>
+
       <div className="relative w-full">
         <div className="relative flex items-center bg-gray-200 rounded-md pl-4">
-          {/* <Image
-            src="/assets/icons/ethereum-eth-logo.svg"
-            alt="ETH"
-            width={18}
-            height={18}
-            className={`${activeMode === "USD" ? "invisible" : ""} absolute left-2`}
-          /> */}
           <NumericFormat
-            value={betAmount === 0 ? "" : betAmount}
-            onValueChange={({ value }) => {
-              setBetAmount(parseFloat(value) || 0);
-            }}
-            thousandSeparator={activeMode === "USD"}
-            prefix={activeMode === "USD" ? "$" : ""}
+            value={getDisplayValue()}
+            onValueChange={({ value }) => handleValueChange(value)}
+            thousandSeparator={activeMode === BetAmountMode.USD}
+            prefix={activeMode === BetAmountMode.USD ? "$" : ""}
             allowNegative={false}
-            decimalScale={activeMode === "WEI" ? 0 : 8}
+            decimalScale={activeMode === BetAmountMode.WEI ? 0 : 8}
             fixedDecimalScale={false}
-            placeholder={activeMode === "USD" ? "$0" : "0"}
+            placeholder={activeMode === BetAmountMode.USD ? "$0" : "0"}
             className="w-full h-14 bg-transparent text-xl font-medium text-left rounded-md outline-none pr-0"
           />
         </div>
+
         <div className="absolute inset-y-0 right-0 flex flex-row items-center">
           <button
             className="w-10 h-10 bg-gray-300 hover:bg-gray-200 border-gray-400 flex justify-center items-center text-lg font-bold rounded"
@@ -88,9 +133,7 @@ const BetAmountPicker = () => {
               marginRight: "6px",
               boxShadow: "inset 0 0 3px rgba(0, 0, 0, 0.1)",
             }}
-            onMouseDown={() =>
-              handleMouseDown(() => setBetAmount(prev => Math.max(0, activeMode === "WEI" ? prev - 1 : prev - 0.01)))
-            }
+            onMouseDown={() => handleMouseDown(handleDecrement)}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
           >
@@ -103,9 +146,7 @@ const BetAmountPicker = () => {
               marginRight: "8px",
               boxShadow: "inset 0 0 3px rgba(0, 0, 0, 0.1)",
             }}
-            onMouseDown={() =>
-              handleMouseDown(() => setBetAmount(prev => (activeMode === "WEI" ? prev + 1 : prev + 0.01)))
-            }
+            onMouseDown={() => handleMouseDown(handleIncrement)}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
           >
