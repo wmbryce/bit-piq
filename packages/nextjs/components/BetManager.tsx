@@ -2,6 +2,7 @@ import { useEffect, useReducer, useState } from "react";
 import BetAmountPicker from "./BetAmountPicker";
 import HashPicker from "./HashPicker";
 import { cn } from "@/utils/cn";
+import { motion } from "framer-motion";
 
 type BetAmountAction =
   | { type: "SET_USD"; payload: number }
@@ -126,31 +127,44 @@ const BetManager = ({ writePlaceBet }: { writePlaceBet: any }) => {
     setActiveTab(newTab);
   };
 
+  const tabs = [
+    {
+      label: "Place Bet",
+      value: BetManagerTabEnum.PLACE_BET,
+      length: 100,
+    },
+    {
+      label: "View Bets",
+      value: BetManagerTabEnum.VIEW_BETS,
+      length: 100,
+    },
+  ];
+
   return (
     <div className="border-[1px] border-slate-200 rounded-md shadow-md bg-slate-50 z-40 w-[480px] h-fit mt-8">
-      <div className="border-b-[1px] border-gray-200 flex items-center pt-4 px-4 gap-8">
-        <button
-          className={cn(
-            "text-sm py-0.5 font-sans px-1 text-slate-500",
-            activeTab === BetManagerTabEnum.PLACE_BET
-              ? "active border-b-[2px] text-slate-800 border-slate-800 font-medium"
-              : "",
-          )}
-          onClick={() => handleTabChange(BetManagerTabEnum.PLACE_BET)}
-        >
-          Place Bet
-        </button>
-        <button
-          className={cn(
-            "text-sm py-0.5 text-slate-500 px-1",
-            activeTab === BetManagerTabEnum.VIEW_BETS
-              ? "active border-b-[2px] text-slate-800 border-slate-800 font-medium"
-              : "",
-          )}
-          onClick={() => handleTabChange(BetManagerTabEnum.VIEW_BETS)}
-        >
-          View Bets
-        </button>
+      <div className="border-b-[1px] border-gray-200 flex items-center pt-4 px-4 gap-8 relative">
+        {tabs.map(tab => (
+          <button
+            key={tab.value}
+            className={cn(
+              "text-sm py-0.5 font-sans px-1 text-slate-500",
+              activeTab === tab.value && "active text-slate-800 font-medium",
+            )}
+            onClick={() => handleTabChange(tab.value)}
+          >
+            {tab.label}
+          </button>
+        ))}
+        <motion.div
+          className="h-0.5 bottom-0  bg-gray-700 absolute"
+          style={{ width: `76px`, left: "16px" }}
+          animate={{ x: activeTab === BetManagerTabEnum.PLACE_BET ? 0 : 102 }}
+          transition={{
+            type: "spring",
+            stiffness: 400,
+            damping: 30,
+          }}
+        />
       </div>
       <div className="p-4">
         {activeTab === BetManagerTabEnum.PLACE_BET && (

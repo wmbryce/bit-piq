@@ -130,6 +130,7 @@ const BetAmountPicker = ({ betAmount, updateUsd, updateEth, updateWei }: BetAmou
             onValueChange={({ value }) => handleValueChange(value)}
             thousandSeparator={activeMode === BetAmountMode.USD}
             prefix={activeMode === BetAmountMode.USD ? "$" : ""}
+            suffix={activeMode === BetAmountMode.ETH || activeMode === BetAmountMode.USD ? "" : " wei"}
             allowNegative={false}
             decimalScale={activeMode === BetAmountMode.WEI ? 0 : 8}
             fixedDecimalScale={false}
