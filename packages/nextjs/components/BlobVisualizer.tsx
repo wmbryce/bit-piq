@@ -50,10 +50,6 @@ const BlobVisualizer: React.FC<BlobVisualizerProps> = ({ minted, loading }) => {
     }
   }, [minted, completed]);
 
-  if (!minted) {
-    console.log({ blobs, currentIndex });
-  }
-
   return (
     <div className="flex flex-row gap-[2px]">
       {blobs.map((columns, xIndex) => (

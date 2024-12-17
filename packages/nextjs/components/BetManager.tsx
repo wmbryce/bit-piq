@@ -1,8 +1,10 @@
 import { useEffect, useReducer, useState } from "react";
-import BetAmountPicker from "./BetAmountPicker";
-import HashPicker from "./HashPicker";
+import PlaceBet from "./PlaceBet";
+import ViewBets from "./ViewBets";
 import { cn } from "@/utils/cn";
 import { motion } from "framer-motion";
+
+// import { motion } from "framer-motion";
 
 type BetAmountAction =
   | { type: "SET_USD"; payload: number }
@@ -96,20 +98,6 @@ function setBetManagerActiveTab(activeTab: BetManagerTabEnum) {
   localStorage.setItem("betManagerActiveTab", activeTab);
 }
 
-/**
- * Converts a string or string array to a numeric value.
- * - If `s` is a string, the function parses it as a hexadecimal character.
- * - If `s` is a string array, the function joins the elements and parses the result as a binary number.
- * @param s - A single string or an array of strings.
- * @returns The parsed numeric value.
- */
-function getHashPickValue(s: string | string[]): number {
-  if (typeof s === "string") {
-    return parseInt(s, 16);
-  }
-  return parseInt(s.join(""), 2);
-}
-
 const BetManager = ({ writePlaceBet }: { writePlaceBet: any }) => {
   const [activeTab, setActiveTab] = useState<BetManagerTabEnum>(() => {
     return (localStorage.getItem("betManagerActiveTab") as BetManagerTabEnum) || BetManagerTabEnum.PLACE_BET;
@@ -168,53 +156,21 @@ const BetManager = ({ writePlaceBet }: { writePlaceBet: any }) => {
       </div>
       <div className="p-4">
         {activeTab === BetManagerTabEnum.PLACE_BET && (
-          <div className="flex flex-col justify-start items-center rounded-md gap-8">
-            <HashPicker setHashPick={setHashPick} />
-            <BetAmountPicker betAmount={betAmount} updateUsd={updateUsd} updateEth={updateEth} updateWei={updateWei} />
-            <div className="w-full mt-6">
-              {/* Key-Value Lines */}
-              <div className="flex justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700">Current ETH Price</span>
-                <span className="text-sm text-gray-600">${ethPrice.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700">Wager Value</span>
-                <span className="text-sm text-gray-600">${betAmount.usd.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm font-medium text-gray-700">Possible Winnings</span>
-                <span className="text-sm text-gray-600">${(betAmount.usd * 16).toFixed(2)}</span>
-              </div>
-            </div>
-            <div className="flex w-full justify-end items-center">
-              <button
-                className="bg-black text-white px-4 py-2 mt-6 rounded-md hover:opacity-50"
-                onClick={async () => {
-                  try {
-                    setLoading(true);
-                    const hashPickValue = getHashPickValue(hashPick);
-                    const response = await writePlaceBet({
-                      functionName: "placeBet",
-                      args: [hashPickValue],
-                      value: BigInt(betAmount.wei),
-                    });
-                    console.log("Transaction successful:", response);
-                  } catch (error) {
-                    console.error("Error placing bet:", error);
-                  } finally {
-                    setLoading(false);
-                  }
-                }}
-              >
-                {loading ? "Loading..." : "Place Bet"}
-              </button>
-            </div>
-          </div>
+          <PlaceBet
+            setHashPick={setHashPick}
+            betAmount={betAmount}
+            updateUsd={updateUsd}
+            updateEth={updateEth}
+            updateWei={updateWei}
+            ethPrice={ethPrice}
+            setLoading={setLoading}
+            writePlaceBet={writePlaceBet}
+            loading={loading}
+            hashPick={hashPick}
+          />
         )}
         {activeTab === BetManagerTabEnum.VIEW_BETS && (
-          <div className="flex flex-col justify-start items-center bg-gray-200 rounded-md p-4">
-            <h1 className="text-2xl font-bold">View Bets</h1>
-          </div>
+          <ViewBets toggleTab={() => handleTabChange(BetManagerTabEnum.PLACE_BET)} />
         )}
       </div>
     </div>
