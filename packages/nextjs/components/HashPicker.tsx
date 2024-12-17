@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 
 const validateHexInput = (input: string) => /^[0-9A-Fa-f]$/.test(input);
 
@@ -91,19 +92,32 @@ const HashPicker: React.FC<HashPickerProps> = ({ setHashPick }) => {
           <h1 className="text-lg font-medium text-slate-900 text-left mb-0">Bit Selector</h1>
           <h2 className="text-sm text-slate-600 text-left">Guess the last digit of the upcoming block</h2>
         </div>
-        <div className="flex items-center bg-gray-200 rounded-md p-1">
+        <motion.div className="flex items-center bg-gray-200 rounded-md p-1 relative" layout>
+          <motion.div
+            layoutId="active-container"
+            className="bg-white shadow rounded-md p-1 z-0 absolute h-[36px] w-[46%] m-1"
+            style={{
+              left: 0,
+            }}
+            animate={{
+              x: activePicker === HashPickerMode.BIN ? "0px" : "100%",
+            }}
+            transition={{
+              type: "spring",
+              stiffness: 400,
+              damping: 30,
+            }}
+          />
           {modes.map((mode: HashPickerMode) => (
-            <button
+            <motion.button
               key={mode}
-              className={`flex-1 px-4 py-2 text-sm rounded-md font-medium ${
-                activePicker === mode ? "bg-white shadow" : "bg-transparent"
-              }`}
+              className={"flex-1 px-4 py-2 text-sm rounded-md font-medium bg-transparent z-10"}
               onClick={() => handleTogglePicker(mode)}
             >
               {mode}
-            </button>
+            </motion.button>
           ))}
-        </div>
+        </motion.div>
       </div>
 
       {/* Picker */}
@@ -116,7 +130,8 @@ const HashPicker: React.FC<HashPickerProps> = ({ setHashPick }) => {
                 className="flex flex-1 bg-gray-200 text-5xl font-bold rounded-md items-center justify-center"
                 onClick={() => handleToggleBinaryHashPick(index)}
               >
-                {bit}
+                <motion.div layoutId={`bit-${index}`}>{bit}</motion.div>
+                {/* <motion.div layoutId={`bit-${index}`}>{bit}</motion.div> */}
               </button>
             ))}
           </div>
