@@ -1,6 +1,8 @@
 import { useEffect, useReducer, useState } from "react";
 import PlaceBet from "./PlaceBet";
 import ViewBets from "./ViewBets";
+import { useInitializeNativeCurrencyPrice } from "@/hooks/scaffold-eth";
+import { useGlobalState } from "@/services/store/store";
 import { cn } from "@/utils/cn";
 import { motion } from "framer-motion";
 
@@ -74,10 +76,10 @@ const betAmountReducer = (state: BetAmountState, action: BetAmountAction): BetAm
   }
 };
 
-const useBetAmount = (initialEthPrice: number) => {
+const useBetAmount = (ethPrice: number) => {
   const [betAmount, dispatch] = useReducer<React.Reducer<BetAmount, BetAmountAction>>(
     betAmountReducer,
-    new BetAmount(initialEthPrice),
+    new BetAmount(ethPrice),
   );
 
   return {
@@ -94,22 +96,18 @@ enum BetManagerTabEnum {
   VIEW_BETS = "viewBets",
 }
 
-function setBetManagerActiveTab(activeTab: BetManagerTabEnum) {
-  localStorage.setItem("betManagerActiveTab", activeTab);
-}
-
 const BetManager = ({ writePlaceBet }: { writePlaceBet: any }) => {
-  const [activeTab, setActiveTab] = useState<BetManagerTabEnum>(() => {
-    return (localStorage.getItem("betManagerActiveTab") as BetManagerTabEnum) || BetManagerTabEnum.PLACE_BET;
-  });
-  const ethPrice = 3800;
+  const [activeTab, setActiveTab] = useState<BetManagerTabEnum>(BetManagerTabEnum.PLACE_BET);
   const [loading, setLoading] = useState(false);
   const [hashPick, setHashPick] = useState<string | string[]>("0");
+
+  const ethPrice = useGlobalState(state => state?.nativeCurrency?.price);
+
   const { betAmount, updateUsd, updateEth, updateWei, updateEthPrice } = useBetAmount(ethPrice);
 
   useEffect(() => {
-    setBetManagerActiveTab(activeTab);
-  }, [activeTab]);
+    updateEthPrice(ethPrice);
+  }, [ethPrice]);
 
   const handleTabChange = (newTab: BetManagerTabEnum) => {
     setActiveTab(newTab);
