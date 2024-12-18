@@ -1,7 +1,6 @@
 import { useEffect, useReducer, useState } from "react";
 import PlaceBet from "./PlaceBet";
 import ViewBets from "./ViewBets";
-import { useInitializeNativeCurrencyPrice } from "@/hooks/scaffold-eth";
 import { useGlobalState } from "@/services/store/store";
 import { cn } from "@/utils/cn";
 import { motion } from "framer-motion";

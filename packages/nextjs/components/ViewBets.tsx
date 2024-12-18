@@ -18,7 +18,30 @@ const ViewBets: React.FC<ViewBetsProps> = ({ toggleTab }) => {
     args: [connectedAddress],
   });
 
-  console.log(bets);
+  console.log({ bets });
+
+  const headers = [
+    {
+      label: "Block",
+      key: "block",
+    },
+    {
+      label: "Pick",
+      key: "pick",
+    },
+    {
+      label: "Amount",
+      key: "amount",
+    },
+    {
+      label: "Time",
+      key: "time",
+    },
+    {
+      label: "Status",
+      key: "status",
+    },
+  ];
 
   return (
     <div className="flex flex-col justify-start items-start rounded-md p-4">
@@ -26,35 +49,44 @@ const ViewBets: React.FC<ViewBetsProps> = ({ toggleTab }) => {
         <>
           <h1 className="text-lg font-medium text-slate-900 text-left mb-0">Active Wagers</h1>
           <h2 className="text-sm text-slate-600 text-left">These are your active wagers that you can redeem</h2>
-          <table className="flex flex-col justify-start items-center bg-gray-200 rounded-md p-4">
-            <thead>
-              <tr>
-                <th>Block</th>
-                <th>Pick</th>
-                <th>Amount</th>
-                <th>Time</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {bets?.map((bet: any) => (
-                <tr key={bet.id}>
-                  <td>{bet.block}</td>
-                  <td>{bet.pick}</td>
-                  <td>{bet.amount}</td>
-                  <td>{bet.time}</td>
-                  <td>{bet.status}</td>
+          <div className="w-full overflow-x-auto">
+            <table className="min-w-full table-auto border-collapse mt-4">
+              <thead>
+                <tr className="bg-slate-100">
+                  {headers.map(header => (
+                    <th
+                      key={header.key}
+                      className="px-6 py-3 text-left text-sm font-medium text-slate-900 border-b border-slate-200"
+                    >
+                      {header.label}
+                    </th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          <div className="flex flex-row justify-end items-center gap-4">
+              </thead>
+              <tbody className="bg-white">
+                {bets?.map((bet: any) => (
+                  <tr key={bet.id} className="hover:bg-slate-50 transition-colors">
+                    {headers.map(header => (
+                      <td
+                        key={header.key + bet.id}
+                        className="px-6 py-4 text-sm text-slate-900 border-b border-slate-100"
+                      >
+                        {bet[header.key]}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="flex flex-row justify-end items-center gap-4 mt-4 w-full">
             <button
               onClick={() =>
                 writeClaimWinnings({
                   args: [connectedAddress],
                 })
               }
+              className="bg-black text-white px-4 py-2 rounded-md hover:opacity-80 transition-opacity"
             >
               Redeem
             </button>
