@@ -81,7 +81,7 @@ const PlaceBet = ({
               const response = await writePlaceBet({
                 functionName: "placeBet",
                 args: [hashPickValue],
-                value: BigInt(betAmount.wei),
+                value: BigInt(Math.round(betAmount.wei)),
               });
               console.log("Transaction successful:", response);
             } catch (error) {
