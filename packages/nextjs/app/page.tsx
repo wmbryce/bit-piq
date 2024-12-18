@@ -11,13 +11,6 @@ const Home: NextPage = () => {
   const { address: connectedAddress } = useAccount();
 
   const { writeContractAsync: writePlaceBet } = useScaffoldWriteContract("BitPiq");
-  const { writeContractAsync: writeClaimWinnings } = useScaffoldWriteContract("BitPiq");
-
-  const { data: bets } = useScaffoldReadContract({
-    contractName: "BitPiq",
-    functionName: "getBets",
-    args: [connectedAddress],
-  });
 
   const { blocks } = useFetchBlocks();
 

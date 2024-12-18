@@ -13,7 +13,6 @@ type BlockProps = {
 };
 
 const Block: React.FC<BlockProps> = ({ block, index }) => {
-  console.log({ block });
   return (
     <motion.li
       layoutId={`block-${block.number}`}
