@@ -30,7 +30,7 @@ const HashPicker: React.FC<HashPickerProps> = ({ setHashPick }) => {
 
   const hexInputRef = useRef<HTMLInputElement>(null);
 
-  const handleTogglePicker = (picker: HashPickerMode) => {
+  const handleTogglePicker = (picker: HashPickerMode) => () => {
     setActivePicker(picker);
   };
 
@@ -84,6 +84,8 @@ const HashPicker: React.FC<HashPickerProps> = ({ setHashPick }) => {
 
   const modes: HashPickerMode[] = [HashPickerMode.BIN, HashPickerMode.HEX];
 
+  console.log(activePicker);
+
   return (
     <div className="flex flex-col w-full">
       {/* Heading */}
@@ -112,7 +114,7 @@ const HashPicker: React.FC<HashPickerProps> = ({ setHashPick }) => {
             <motion.button
               key={mode}
               className={"flex-1 px-4 py-2 text-sm rounded-md font-medium bg-transparent z-10"}
-              onClick={() => handleTogglePicker(mode)}
+              onClick={handleTogglePicker(mode)}
             >
               {mode}
             </motion.button>
