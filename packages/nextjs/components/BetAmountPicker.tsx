@@ -95,13 +95,26 @@ const BetAmountPicker = ({ betAmount, updateUsd, updateEth, updateWei }: BetAmou
           <h1 className="text-lg font-medium text-left mb-0">Wager Amount</h1>
           <h2 className="text-sm text-gray-600 text-left">Winnings are paid out 16 to 1</h2>
         </div>
-        <motion.div className="flex items-center bg-gray-200 rounded-md p-1" layout>
+        <motion.div className="flex items-center bg-gray-200 rounded-md p-1 relative" layout>
+          <motion.div
+            layoutId="active-container"
+            className="bg-white shadow rounded-md p-1 z-0 absolute h-[36px] w-[31%] m-1"
+            style={{
+              left: 0,
+            }}
+            animate={{
+              x: activeMode === BetAmountMode.USD ? "0px" : activeMode === BetAmountMode.ETH ? "108%" : "208%",
+            }}
+            transition={{
+              type: "spring",
+              stiffness: 400,
+              damping: 30,
+            }}
+          />
           {modes.map(mode => (
             <motion.button
               key={mode}
-              className={`flex-1 px-4 py-2 text-sm rounded-md font-medium ${
-                activeMode === mode ? "bg-white shadow" : "bg-transparent"
-              }`}
+              className={"z-10 flex-1 px-4 py-2 text-sm rounded-md font-medium bg-transparent"}
               onClick={() => setActiveMode(mode)}
             >
               {mode}
@@ -116,7 +129,8 @@ const BetAmountPicker = ({ betAmount, updateUsd, updateEth, updateWei }: BetAmou
             value={getDisplayValue()}
             onValueChange={({ value }) => handleValueChange(value)}
             thousandSeparator={activeMode === BetAmountMode.USD}
-            prefix={activeMode === BetAmountMode.USD ? "$" : ""}
+            prefix={activeMode === BetAmountMode.USD ? "$" : activeMode === BetAmountMode.ETH ? "" : ""}
+            suffix={activeMode === BetAmountMode.ETH || activeMode === BetAmountMode.USD ? "" : " wei"}
             allowNegative={false}
             decimalScale={activeMode === BetAmountMode.WEI ? 0 : 8}
             fixedDecimalScale={false}

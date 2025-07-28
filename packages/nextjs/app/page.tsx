@@ -3,7 +3,7 @@
 import BetManager from "../components/BetManager";
 import IncomingBlocks from "../components/IncomingBlocks";
 import type { Block } from "../components/IncomingBlocks";
-import { useFetchBlocks, useScaffoldReadContract, useScaffoldWriteContract } from "@/hooks/scaffold-eth";
+import { useFetchBlocks, useScaffoldWriteContract } from "@/hooks/scaffold-eth";
 import type { NextPage } from "next";
 import { useAccount } from "wagmi";
 
@@ -11,13 +11,6 @@ const Home: NextPage = () => {
   const { address: connectedAddress } = useAccount();
 
   const { writeContractAsync: writePlaceBet } = useScaffoldWriteContract("BitPiq");
-  const { writeContractAsync: writeClaimWinnings } = useScaffoldWriteContract("BitPiq");
-
-  const { data: bets } = useScaffoldReadContract({
-    contractName: "BitPiq",
-    functionName: "getBets",
-    args: [connectedAddress],
-  });
 
   const { blocks } = useFetchBlocks();
 
